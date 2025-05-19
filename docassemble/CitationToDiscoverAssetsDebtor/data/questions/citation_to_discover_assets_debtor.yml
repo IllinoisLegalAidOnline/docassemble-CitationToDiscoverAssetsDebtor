@@ -66,10 +66,12 @@ code: |
     if other_parties[0].has_agent:
       agent.name.first
   other_parties[0].address.address
-  plaintiff_or_petitioner
+  
 
   nav.set_section('section_case')
-  trial_court_index
+  plaintiff_or_petitioner
+  if trial_court_index == -1:
+    cook_district
   case_number
   judgment_amount
   amount_still_owed
@@ -629,7 +631,7 @@ question: |
 subquestion: |
   Enter the date, time, and courtroom information for your citation hearing.
 
-  If you do not know this yet, you can leave these fields blank
+  If you do not know this yet, you can leave these fields blank. You must add this information to the Citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
 fields:
   - Date: hearing_date
     datatype: date
@@ -826,3 +828,247 @@ content: |
   Thanks for using ILAO Easy Forms!
   
   [**Illinois Legal Aid Online**](https://www.illinoislegalaid.org)
+---
+objects:
+  - instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
+  - citation_first_page: ALDocument.using(title="Citation", filename="citation_first_page.pdf", has_addendum=False)
+  - citation_remaining_pages: ALDocument.using(title="Citation", filename="citation_remaining_pages.pdf", has_addendum=False)
+---
+objects:
+  - citation_bundle: ALDocumentBundle.using(elements=[citation_first_page, citation_remaining_pages], filename="citation_to_discover_assets_to_debtor.pdf", title = "Citation to Discover Assets to Debtor")
+---
+objects:
+  - al_user_bundle: ALDocumentBundle.using(elements=[instructions, citation_bundle], filename="citation_to_discover_assets_to_debtor.pdf", title="All forms")
+  - al_court_bundle: ALDocumentBundle.using(elements=[instructions, citation_bundle], filename="citation_to_discover_assets_to_debtor.pdf", title="All forms")
+---
+code: |
+  instructions.enabled = True
+  citation_first_page.enabled = True
+  citation_remaining_pages.enabled = True
+  citation_bundle.enabled = True
+---
+attachment:
+  variable name: instructions[i]
+  name: instructions
+  filename: instructions
+  skip undefined: True
+  editable: False
+  pdf template file: instructions_citation_debtor.pdf
+  fields:
+      - "fake": ${ "" } 
+---
+attachment:
+  variable name: citation_first_page[i]
+  name: citation_first_page
+  filename: citation_first_page
+  skip undefined: True
+  editable: True
+  pdf template file: citation_debtor_first_page.pdf
+  fields:
+    - "county_1": ${reference_number.address.county}
+    - "case_number_1": ${case_number}
+    - "plaintiff_name_1": ${users[0].name.full(middle='full') if plaintiff_or_petitioner else other_parties[0].name.full(middle='full')}
+    - "defendant_name_1": ${other_parties[0].name.full(middle='full') if plaintiff_or_petitioner else users[0].name.full(middle='full')}
+    - "debtor_name_1": ${other_parties[0].name.full(middle='full')}
+    - "debtor_street": ${other_parties[0].address.line_one(bare=True)}
+    - "debtor_csz": ${other_parties[0].address.line_two()}
+    - "court_date": ${hearing_date}
+    - "court_time": ${format_time(hearing_time, format='h:mm') if hearing_time != "" else ""}
+    - "court_am": ${True if format_time(hearing_time, format='a')=='AM' and hearing_time != "" else ""}
+    - "court_pm": ${True if format_time(hearing_time, format='a')=='PM' and hearing_time != "" else ""}
+    - "in_person": ${True if hearing_type == "person" else False}
+    - "remote": ${True if hearing_type == "remote" else False}
+    - "courtroom": ${courtroom if hearing_type == "person" else ""}
+    - "courtroom_street": ${reference_number.address.line_one(bare=True) if hearing_type == "person" else ""}
+    - "courtroom_csz": ${reference_number.address.line_two() if hearing_type == "person" else ""}
+    - "remote_instructions": ${remote_instructions}
+    - "clerk_phone": ${reference_number.phone}
+    - "clerk_website": ${reference_number.website}
+---
+attachment:
+  variable name: citation_remaining_pages[i]
+  name: citation_remaining_pages
+  filename: citation_remaining_pages
+  skip undefined: True
+  editable: False
+  pdf template file: citation_debtor_remaining_pages.pdf
+  fields:
+    - "plaintiff_name_2": ${users[0].name.full(middle='full') if plaintiff_or_petitioner else other_parties[0].name.full(middle='full')}
+    - "defendant_name_2": ${other_parties[0].name.full(middle='full') if plaintiff_or_petitioner else users[0].name.full(middle='full')}
+    - "county_2": ${reference_number.address.county}
+    - "case_number_2": ${case_number}
+    - "case_number_3": ${case_number}
+    - "case_number_4": ${case_number}
+    - "case_number_5": ${case_number}
+    - "case_number_6": ${case_number}
+    - "case_number_7": ${case_number}
+    - "judgment_date": ${judgment_date}
+    - "judgment_amount": ${judgment_amount}
+    - "owed_amount": ${amount_still_owed}
+    - "other_docs": ${debtor_docs if any_debtor_docs else ""}
+    - "e_signature": ${users[0].name.full(middle='full') if e_signature else ""}
+    - "user_name_1": ${users[0].name.full(middle='full') }
+    - "user_street": ${users[0].address.line_one(bare=True)}
+    - "user_csz": ${users[0].address.line_two(bare=True)}
+    - "user_email": ${users[0].email if users[0].has_email_address else ""}
+    - "user_phone": ${phone_number_formatted(users[0].phone_number) if users[0].phone_number != "" else ""}
+---
+section: Judgment
+id: judgment review screen
+event: section_judgment
+question: |
+  Judgment
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: judgment_date 
+    button: |
+        **Judgment date:**
+        ${judgment_date}
+  - Edit: been_revived
+    button: |
+      **Has the judgment been revived?**
+      ${word(yesno(been_revived))}
+    show if: today().minus(years=7) > judgment_date
+  - Edit: renewal_date
+    button: |
+        **Revival date:**
+        ${renewal_date}
+    show if: (today().minus(years=7) > judgment_date) and been_revived
+---
+section: Debtor
+id: debtor review screen
+event: section_debtor
+question: |
+  Debtor
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: other_parties[0].name.first
+    button: |
+      **Debtor's name:**
+      ${other_parties[0].name.full(middle='full')}
+  - Edit: other_parties[0].has_agent
+    button: |
+      **Does ${other_parties[0].name.first} have a register agent?**
+      ${word(yesno(other_parties[0].has_agent))}
+    show if: other_parties[0].person_type == "business"
+  - Edit: agent.name.first
+    button: |
+      **Agent's name:**
+      ${agent.name.full(middle='full')}
+    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
+  - Edit: other_parties[0].address.address
+    button: |
+      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
+      **${agent.name.full(middle='full')}'s address:**
+      % else:
+      **${other_parties[0].name.full(middle='full')}'s address:**
+      % endif
+      ${other_parties[0].address.on_one_line(bare=True)}
+---
+section: Case details
+id: case details review screen
+event: section_case
+question: |
+  Case details
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: party_label
+    button: |
+      **Your party label:**
+      ${capitalize(party_label)}
+  - Edit: trial_court_index
+    recompute:
+      - reference_number
+    button: |
+      **You are filing in:**
+      ${end_in_county(reference_number.address.county)}
+  - Edit: cook_district
+    button: |
+      **Cook County courthouse:**
+      % if cook_district == "15":
+      ${ "Daley Center, 50 W. Washington Street, Chicago" }
+      % elif cook_district == "16":
+      ${ "Second Municipal District, 5600 Old Orchard Road, Skokie" }
+      % elif cook_district == "17":
+      ${ "Third Municipal District, 2121 Euclid Avenue, Rolling Meadows" }
+      % elif cook_district == "18":
+      ${ "Fourth Municipal District, 1500 Maybrook Drive, Maywood" }
+      % elif cook_district == "19":
+      ${ "Fifth Municipal District, 10220 S. 76th Avenue, Bridgeview" }
+      % elif cook_district == "20":
+      ${ "Sixth Municipal District, 16501 South Kedzie Parkway, Markham" }
+      % elif cook_district == "21":
+      ${ "Domestic Violence Court, 555 W. Harrison Street, Chicago" }
+      % elif cook_district == "22":
+      ${ "George N. Leighton Criminal Court Building, 2600 S. California Avenue, Chicago" }
+      % else:
+      ${ "Juvenile Center, 2245 West Ogden Avenue, Chicago" }
+      % endif      
+    show if: trial_court_index == -1      
+  - Edit: case_number
+    button: |
+      **Case number:**
+      ${case_number}
+  - Edit: judgment_amount
+    button: |
+      **Original judgment amount:**
+      ${currency(judgment_amount)}
+  - Edit: amount_still_owed
+    button: |
+      **Amount still owed:**
+      ${currency(amount_still_owed)}
+  - Edit: hearing_date
+    button: |
+      **Hearing date:**
+      % if hearing_date != "":
+      ${hearing_date}
+      % else:
+      I don't know
+      % endif
+  - Edit: any_debtor_docs
+    button: |
+      % if any_debtor_docs:
+      **What additional documents should ${other_parties[0].name.full(middle='full')} bring?**
+      ${debtor_docs}
+      % else:
+      **Should ${other_parties[0].name.full(middle='full')} bring additional documents?** 
+      No
+      % endif
+---
+section: About you
+id: user review screen
+event: section_user
+question: |
+  About you
+subquestion: |
+  Edit your answers below.
+review:
+  - Edit: users[0].name.first
+    button: |
+      **Your name:**
+      ${users[0].name.full(middle='full')}
+  - Edit: users[0].address.address
+    button: |
+      **Your address:**
+      ${users[0].address.on_one_line(bare=True)}
+  - Edit: users[0].has_email_address
+    button: |
+      **Your contact information:**
+
+      % if users[0].has_email_address:
+      * Email: ${users[0].email}
+      % else:
+      * Email
+      % endif
+      % if users[0].phone_number != "":
+      * Phone: ${phone_number_formatted(users[0].phone_number)}
+      % else:
+      * Phone:
+      % endif
+  - Edit: e_signature
+    button: |
+      **Do you want to add your e-signature to your forms?**
+      ${ word(yesno(e_signature)) }
