@@ -1,0 +1,828 @@
+metadata:
+  title: Citation to discover assets to debtor
+  short title: Citation to discover assets
+  comment: This program helps you make a form to collect on a money judgment directly from a debtor.
+  authors:
+    - Vivian McNaughton
+    - Matt Newsted
+---
+include:
+  - docassemble.AssemblyLine:assembly_line.yml
+  - docassemble.ALToolbox:phone-number-validation.yml
+  - docassemble.ILAO:ilao-interview-framework.yml
+  - docassemble.ILAO:shared-basic-questions.yml
+---
+objects:
+  - users: ALPeopleList.using(there_are_any=True, complete_attribute=['complete'])
+  - other_parties: ALPeopleList.using(there_are_any=True, complete_attribute=['complete'])
+  - agent: ALIndividual
+---
+code: |
+  ilao_easy_form_title = "Citation to discover assets to debtor"
+  ilao_easy_form_url = "https://www.illinoislegalaid.org/legal-information/citation-discover-assets-debtor"
+  github_user = 'IllinoisLegalAidOnline'
+  github_repo_name = 'docassemble-CitationToDiscoverAssetsDebtor'
+  allowed_courts = ['Circuit']
+  al_form_type = 'existing_case'
+  form_name = "Citation to discover assets to debtor"
+---
+# Road map
+sections:
+  - section_intro: Start
+  - section_judgment: Judgment
+  - section_debtor: Debtor
+  - section_case: Case details
+  - section_user: About you
+  - section_download: Download  
+---
+#interview code block
+mandatory: True
+code: |
+  nav.set_section('section_intro')
+  sees_nav_bar
+  snapshot_start
+  how_to_use
+  set_progress(5)
+  accept_terms
+  about_citation
+
+  nav.set_section('section_judgment')
+  if today().minus(years=7) > judgment_date:
+    if not been_revived:
+      cant_collect_kickout
+    else:
+      if judgment_date > as_datetime('12/31/2019'):
+        if renewal_date < today().minus(years=10):
+          old_renewal_kickout
+      else:
+        if renewal_date < today().minus(years=20):
+          old_renewal_kickout
+  if judgment_date > today().minus(days=30):
+    wait_note
+
+  nav.set_section('section_debtor')
+  other_parties[0].name.first
+  if other_parties[0].person_type == "business":
+    if other_parties[0].has_agent:
+      agent.name.first
+  other_parties[0].address.address
+  plaintiff_or_petitioner
+
+  nav.set_section('section_case')
+  trial_court_index
+  case_number
+  judgment_amount
+  amount_still_owed
+  hearing_date
+  any_debtor_docs
+
+  nav.set_section('section_user')
+  users[0].name.first
+  users[0].address.address
+  users[0].has_email_address
+  e_signature
+
+  nav.set_section('section_download')
+  forms_assembling
+  get_docs_screen
+---
+code: |
+  stuff_to_snapshot = {
+  	'start_time': str(current_datetime().format_datetime()),
+  	'started_interview': True, 
+  	}
+
+  try:
+    stuff_to_snapshot['ip_address'] = device(ip=True)
+  except:
+    pass
+
+  stuff_to_snapshot['zip'] = showifdef('users[0].address.zip')
+
+  stuff_to_snapshot['downloaded_forms'] = showifdef('forms_assembling')
+  
+  store_variables_snapshot(
+  	data=stuff_to_snapshot, persistent=True
+  	)
+  snapshot_interview_state = True
+---
+code: |
+  snapshot_interview_state
+  snapshot_start = True  
+---
+code: |
+  reconsider('snapshot_interview_state')
+  snapshot_forms = True
+
+---
+id: welcome
+question: |
+  Citation to discover assets to debtor
+subquestion: |
+  Welcome to Illinois Legal Aid Online's **Citation to discover assets to debtor** Easy Form.
+
+  This program helps you make forms to collect a money you won in a court judgment.
+
+  A Citation to Discover Assets to Debtor will require the person or company ordered to pay you to come to court to answer questions about their property and income. You can then try to get that property or income to pay the judgment if it is not protected by law.
+
+  Learn more about [**finding out about a debtor's money, property, and income**](https://www.illinoislegalaid.org/legal-information/finding-out-about-debtors-money-property-and-income).
+field: sees_nav_bar
+---
+id: instructions
+continue button field: how_to_use
+question: |
+  Instructions
+subquestion: |
+  To use this program you will need to know the:
+
+  * Case number,
+  * Courthouse address if court hearing is in person,
+  * Circuit clerk phone, website, and remote hearing instructions if court hearing is remote, 
+  * Name and address of the debtor,
+  * Date of judgment or the date it was renewed (revived),
+  * Amount of judgment, and
+  * Amount that remains unpaid.
+
+  Set aside 10 to 15 minutes to finish this program. You can log in and save your work to return to later. 
+
+  ${ collapse_template(help_example) }  
+
+  Click on **{green words}** to learn what they mean. Some pages have a question mark in a circle ${ fa_icon("question-circle", color_css="#0dcaf0" ) } that helps explain things.
+---
+template: help_example
+subject: |
+  **You can click sections like this to show more information.**
+content: |  
+  This is an example of help. Click again to hide.
+---
+id: about citation
+continue button field: about_citation
+question: |
+  About the citation
+subquestion: |
+  A *Citation to discover assets to debtor* tells a debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can try to get that property or income to pay the judgment.
+  
+  This citation only applies to the debtor. If you want the debtor's bank or employer to answer questions about the their property and income, you can use ILAO's [**collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
+  
+  You will need to serve the debtor with the citation. You can use a sheriff or private process server to do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
+---
+id: judgment date
+question: |
+  When was the judgment date?
+subquestion: |
+  This is the date the court ruled the other party owed you money.
+
+  You can collect a money judgment that is less than 7 years old. If your money judgment is over 7 years old, you can collect it if the judgment was **{renewed}**.
+
+  If your money judgment was issued after Jan 1, 2020, it can be renewed within 10 years of the judgment date. If it was issued before Jan 1, 2020, it can be renewed within 20 years of the judgment date. Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+fields:
+  - Judgment date: judgment_date
+    datatype: ThreePartsDate
+    alMax: ${ today().format("yyyy-MM-dd") }
+    alMin: ${ today().minus(years=27) }
+terms: 
+  - renewed: |
+      A money judgment is **renewed** or revived if the you filed a petition to revive judgment and the court agreed to revive it. 
+---
+id: been revived date
+question: |
+  Has the judgment been renewed?
+subquestion: |
+  A money judgment is **renewed** or revived if the you filed a petition to revive judgment and the court agreed to revive it. 
+fields:
+  - no label: been_revived
+    datatype: yesnoradio
+  - When was the judgment renewed?: renewal_date
+    datatype: ThreePartsDate
+    alMax:  ${today()}
+    alMin: ${judgment_date}
+    js show if:
+      val('been_revived') === true
+---
+id: cant collect kickout
+event: cant_collect_kickout
+question: |
+  Sorry
+subquestion: |
+  % if (judgment_date > as_datetime('12/31/2019')) and (today().minus(years=10) > judgment_date):
+  You may not be able to enforce the judgment, as more than 10 years have passed since ${judgment_date}. 
+  % elif (judgment_date > as_datetime('12/31/2019')) and (judgment_date >= today().minus(years=10)):
+  More than seven years have passed since ${judgment_date}. You have until ${judgment_date.plus(years=10)} to revive the judgment.  Check with your local circuit clerk's office to get a Petition to Revive.
+  % elif (as_datetime('01/01/2020') > judgment_date) and (today().minus(years=20) > judgment_date):
+  You may not be able to enforce the judgment, as more than 20 years have passed since ${judgment_date}. 
+  % elif (as_datetime('01/01/2020') > judgment_date) and (judgment_date >= today().minus(years=20)):
+  More than seven years have passed since ${judgment_date}. You have until ${judgment_date.plus(years=20)} to revive the judgment.  Check with your local circuit clerk's office to get a Petition to Revive.
+  % endif
+
+  Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+
+  Click **Back** if you made a mistake. Or you can talk with a lawyer to discuss your options. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+id: old renewal kickout
+event: old_renewal_kickout
+question: |
+  Sorry
+subquestion: |
+  % if judgment_date > as_datetime('12/31/2019'):
+  You may not be able to enforce the judgment, as more than 10 years have passed since you revived the judgment on ${renewal_date}. 
+  % else:
+  You may not be able to enforce the judgment, as more than 20 years have passed since you revived the judgment on ${renewal_date}. 
+  % endif
+
+  Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+
+  Click **Back** if you made a mistake. Or you can talk with a lawyer to discuss your options. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+buttons:
+  - Exit: exit
+  - Restart: restart
+---
+id: wait note
+continue button field: wait_note
+question: |
+  Waiting 30 days
+subquestion: |
+  If you can, wait at least 30 days after your judgment to file your Citation.
+
+  It becomes difficult for the debtor to challenge your judgment after 30 days.
+---
+id: party label
+question: |
+  What is your party label in the case?
+subquestion: |
+  ${ collapse_template(which_party) }  
+field: party_label
+choices:
+  - Plaintiff: plaintiff
+  - Petitioner: petitioner
+  - Defendant: defendant
+  - Respondent: respondent
+---
+template: which_party
+subject: |
+  **Learn more about roles and party labels**
+content: |
+  If you filed the original case, you are either the Plaintiff or the Petitioner.
+
+  If someone filed the original case against you, you are either the Defendant or the Respondent.
+
+  The other court forms in the case should help you figure it out. Look at the top (the caption) of the Petition, Complaint, or Order. That form should have a label by your name.
+---
+depends on:
+  - party_label
+code: |
+  if party_label == "plaintiff" or party_label == "petitioner":
+    plaintiff_or_petitioner = True
+  if party_label == "defendant" or party_label == "respondent":
+    plaintiff_or_petitioner = False
+---
+sets:
+  - other_parties[i].name.first
+id: debtor name
+question: |
+  What is the debtor's name?
+fields:
+  - code: |
+      other_parties[i].name_fields(person_or_business='unsure')
+---
+id: defendant agent check
+question: |
+  Does ${other_parties[i].name.full(middle='full')} have a registered agent?
+subquestion: |
+  A registered agent is someone chosen by a business to receive court papers if the business is sued. You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
+  
+  Note: If ${other_parties[i].name.full(middle='full')} does not have a registered agent, be sure to include ${other_parties[i].name.full(middle='full')}'s owner as a defendant. You can add the owner by returning to the [**About the case**](${ url_action('section_case') }) section.
+fields:
+  - no label: other_parties[i].agent_check
+    datatype: yesnoradio
+---
+id: defendant agent name
+question: |
+  Who is ${other_parties[0].name.full(middle='full')}'s registered agent?
+subquestion: |
+  You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
+fields:
+  - Registered agent: agent.name.first
+---
+id: debtor address
+question: |
+  % if other_parties[i].person_type == "business" and other_parties[i].has_agent:
+  What is ${agent.name.full(middle='full')}'s address?
+  % else:
+   What is ${other_parties[i].name.full(middle='full')}'s address?
+  % endif
+fields:
+  - Street address: other_parties[i].address.address
+    address autocomplete: True
+  - Address line 2: other_parties[i].address.unit
+    required: False
+  - City: other_parties[i].address.city
+  - State: other_parties[i].address.state
+    code: |
+      states_list()
+  - ZIP code: other_parties[i].address.zip
+---
+id: county
+continue button field: county
+question: |
+  In which county was the court case filed?
+subquestion: |
+  The county should be listed near the top of the court papers.
+fields:
+  - County: trial_court_index
+    code: |
+      court_county_lookup()
+---
+id: Cook County district
+question: |
+  In which Cook County courthouse was the court case filed?
+subquestion: |
+  ${ collapse_template(cook_district_help) }  
+field: cook_district
+choices:
+  - First Municipal District, Daley Center, 50 W. Washington Street, Chicago: 15
+    help: |
+      The First Municipal District covers the **City of Chicago**. 
+  - Second Municipal District, 5600 Old Orchard Road, Skokie: 16
+    help: |
+      The Second Municipal District covers the **northern suburbs of Cook County**. It includes:
+      
+      * Deerfield
+      * Des Plaines
+      * Evanston
+      * Glencoe
+      * Glenview
+      * Golf
+      * Kenilworth
+      * Lincolnwood
+      * Maine (not within Rosemont)
+      * Morton Grove
+      * New Trier
+      * Niles
+      * Northbrook
+      * Northfield (not within Prospect Heights)
+      * Park Ridge
+      * Skokie
+      * Wilmette
+      * Winnetka
+      * Wheeling (within Des Plaines)
+  - Third Municipal District, 2121 Euclid Avenue, Rolling Meadows: 17
+    help: |
+      The Third Municipal District covers the **northwestern suburbs of Cook County**. It includes:
+
+      * Arlington Heights
+      * Barrington
+      * Barrington Hills
+      * Bartlett
+      * Bensenville
+      * Buffalo Grove
+      * East Dundee
+      * Elgin
+      * Elk Grove
+      * Elk Grove Village
+      * Hanover
+      * Hanover Park
+      * Harwood Heights
+      * Hoffman Estates
+      * Inverness
+      * Leyden (within Rosemont and Schiller Park)
+      * Maine (within Rosemont)
+      * Mount Prospect
+      * Norridge
+      * Northfield (within Prospect Heights)
+      * Norwood Park (not within Chicago)
+      * Palatine
+      * Prospect Heights
+      * Rolling Meadows
+      * Roselle
+      * Rosemont
+      * Schaumburg
+      * Schiller Park
+      * South Barrington
+      * Streamwood
+      * Wheeling (not within Des Plaines)    
+  - Fourth Municipal District, 1500 Maybrook Drive, Maywood: 18
+    help: |
+      The Fourth Municipal District covers the **western suburbs of Cook County**. It includes:
+      
+      * Bellwood
+      * Berkeley
+      * Berwyn
+      * Broadview
+      * Brookfield
+      * Cicero
+      * Elmwood Park
+      * Forest Park
+      * Franklin Park
+      * Hillside
+      * La Grange Park
+      * Leyden (not within Rosemont and Schiller Park)
+      * Maywood
+      * Melrose Park
+      * Northlake
+      * North Riverside
+      * Oak Park
+      * Proviso
+      * River Forest
+      * River Grove
+      * Riverside
+      * Stone Park
+      * Westchester  
+  - Fifth Municipal District, 10220 S. 76th Avenue, Bridgeview: 19
+    help: |
+      The Fifth Municipal District covers the **southwestern suburbs of Cook County**. It includes:
+      
+      * Alsip
+      * Bedford Park
+      * Bridgeview
+      * Burbank
+      * Burr Ridge
+      * Chicago Ridge
+      * Crestwood
+      * Countryside
+      * Evergreen Park
+      * Forest View
+      * Hickory Hills
+      * Hinsdale
+      * Hodgkins
+      * Hometown
+      * Indian Head Park
+      * Justice
+      * La Grange
+      * Lemont
+      * Lyons
+      * McCook
+      * Merrionette Park
+      * Oak Forest
+      * Oak Lawn
+      * Orland Hills
+      * Orland Park
+      * Palos
+      * Palos Heights
+      * Palos Hills
+      * Palos Park
+      * Stickney
+      * Summit
+      * Tinley Park
+      * Western Springs
+      * Willow Springs
+      * Woodridge
+      * Worth
+  - Sixth Municipal District, 16501 South Kedzie Parkway, Markham: 20
+    help: |
+      The Sixth Municipal District covers the **southern suburbs of Cook County**. It includes:
+      
+      * Bloom
+      * Blue Island
+      * Bremen
+      * Burnham
+      * Calumet
+      * Calumet City
+      * Calumet Park
+      * Chicago Heights
+      * Country Club Hills
+      * Crete
+      * Dixmoor
+      * Dolton
+      * East Hazel Crest
+      * Flossmoor
+      * Ford Heights
+      * Glenwood
+      * Harvey
+      * Hazel Crest
+      * Homewood
+      * Lansing
+      * Lynwood
+      * Markham
+      * Matteson
+      * Midlothian
+      * Olympia Fields
+      * Park Forest
+      * Phoenix
+      * Posen
+      * Rich
+      * Richton Park
+      * Riverdale
+      * Robbins
+      * Sauk Village
+      * South Chicago Heights
+      * South Holland
+      * Steger
+      * Thornton  
+---
+template: cook_district_help
+subject: |
+  **What if I am not sure?**
+content: |  
+  Visit **[Illinois Court Help](https://www.ilcourthelp.gov/)**, or you can call or text (833) 411-1121 for assistance.
+---
+code: |
+  def court_county_lookup():
+    all_court_counties = court_list._load_courts()['address_county'].items()
+    filtered_courts = [(-1, "Cook")]
+    for court in all_court_counties:
+      if court[1] != "Cook":
+        filtered_courts.append(court)
+    return sorted( filtered_courts, key=lambda y: y[1])
+---
+depends on:
+  - trial_court_index
+  - cook_district
+code: |
+  if trial_court_index == -1:
+    reference_number = court_list.as_court('trial_court', cook_district)
+  else:
+    reference_number = court_list.as_court('trial_court', trial_court_index)
+    
+  court_name = str(reference_number.name)
+  court_street_address = str(reference_number.address.address)
+  court_city = str(reference_number.address.city)
+  court_state = str(reference_number.address.state)
+  court_zip = str(reference_number.address.zip)
+  courthouse_info = court_name + ", " + court_street_address + ", " + court_city + ", " + court_state + " " + court_zip
+---
+template: county_lookup_help
+subject: |
+  **How do I look up the county?**
+content: |  
+  You can use this [**City-to-County Finder**](https://www.statsamerica.org/CityCountyFinder/) to find the county.
+---
+id: judgment amount
+question: |
+  Tell us about the amount ${other_parties[0].name.full(middle='full')} still owes you
+subquestion: |
+  This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name.full(middle='full')} has already paid you.
+
+  The rate for post-judgment interest is 9% per year. This can be complicated by how much time has passed and if ${other_parties[0].name.full(middle='full')} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+
+  ${collapse_template(calculating_interest)}
+fields:
+  - Judgment amount: judgment_amount
+    datatype: currency
+    help: |
+      This is the amount that ${other_parties[0].name.full(middle='full')} was ordered to pay you in the ${judgment_date} judgment.
+  - Your court costs: court_costs
+    datatype: currency
+    help: |
+      These are costs such as filing fees and lawyers' fees. You should only include costs the court ordered ${other_parties[0].name.full(middle='full')} to pay. If the court did not order ${other_parties[0].name.full(middle='full')} to cover your court costs, you should leave this at zero.
+  - Interest: interest_amount
+    datatype: currency
+    help: |
+      The rate for post-judgment interest is 9% per year. This program does not calculate how much interest you are owed.
+  - Amount already paid: already_paid_amount
+    datatype: currency
+    help: |
+      This is the total amount of money ${other_parties[0].name.full(middle='full')} has already paid you. If ${other_parties[0].name.full(middle='full')} has not paid any of the judgment, you should leave this at zero.
+---
+template: calculating_interest
+subject: |
+  **Calculating interest**
+content: |
+    <Insert example>
+---
+depends on:
+  - already_paid_amount
+  - interest_amount
+  - court_costs
+  - judgment_amount
+code: |
+  amount_still_owed_default = (judgment_amount + court_costs + interest_amount) - already_paid_amount
+---
+id: calculated amount still owed
+question: |
+  How much does ${other_parties[0].name.full(middle='full')} still owe you?
+subquestion: |
+  According to your previous answers, ${other_parties[0].name.full(middle='full')} still owes you ${currency(amount_still_owed)}. If that amount is correct, you can click **Next**. If it seems wrong, you can edit the amount owed.
+
+  ${collapse_template(owed_example)}
+fields:
+  - Amount still owed: amount_still_owed
+    datatype: currency
+    default: amount_still_owed_default
+---
+template: owed_example
+subject: |
+  **Example of an amount still owed**
+content: |
+  If the original judgment said {other_parties[0].name.full(middle='full')} owed you $100 plus court costs, your court costs were $10, and the interest on the judgment was $9, the total amount owed would be $100 plus $10 plus $9, which is $119.
+
+  If {other_parties[0].name.full(middle='full')} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
+---
+id: hearing scheduled
+question: |
+  Do you know the date and time of your hearing?
+subquestion: |
+  In some counties, the circuit clerk can give you a hearing date before you file your case. This is sometimes called the Return Date. If you have that information now, you can add it to your forms.
+  
+  If the clerk gives you the hearing date after you file your *Citation to discover assets* with the court, you can add it to your form later.
+
+  You must add this information to the Citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
+fields:
+  - "Know court date and time?": has_court_date
+    datatype: yesnoradio
+---
+id: hearing info
+question: |
+  Court hearing information
+subquestion: |
+  Enter the date, time, and courtroom information for your citation hearing.
+
+  If you do not know this yet, you can leave these fields blank
+fields:
+  - Date: hearing_date
+    datatype: date
+    min: ${ today().format("yyyy-MM-dd") }
+    required: False
+  - Time: hearing_time
+    datatype: time
+    required: False
+  - Hearing type: hearing_type
+    input type: radio
+    required: False
+    choices:
+      - In person: person
+      - By phone or video: remote
+  - Courtroom: courtroom
+    maxlength: 10
+    required: False
+    js show if:
+     val('hearing_type') === "person"
+  - Instructions for attending by phone or video: remote_instructions
+    required: False
+    input type: area
+---
+id: any debtor docs
+question: |
+  Do you want ${other_parties[0].name.fiull(middle='full')} to bring additional documents to court?
+subquestion: |
+  The citation will tell ${other_parties[0].name.full(middle='full')} to bring these documents:
+
+  * Federal and state income taxes for the last 2 years,
+  * Recent pay stubs or proof of income,
+  * Bank records,
+  * Title to motor vehicles,
+  * Deed to any property they own, and
+  * Insurance policies.
+
+  You only need to click **Yes** if you want ${other_parties[0].name.full(middle='full')} to bring something in addition to the above documents.
+fields:
+  - Should ${other_parties[0].name.full(middle='full')} bring additional documents?: any_debtor_docs
+    datatype: yesnoradio
+  - What additional documents should they bring?: debtor_docs
+    input type: area
+    rows: 2
+    maxlength: 250
+    js show if:
+      val('any_debtor_docs') === true
+---
+id: user name
+sets:
+    - users[0].name.first
+    - users[0].name.last
+    - users[0].name.middle
+    - users[0].name.suffix
+question:  |
+  What is your name?
+fields:
+  - code: |
+      users[0].name_fields()
+---
+id: user address
+question: |
+  What is your address?
+fields:
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Address line 2: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: |
+      states_list() 
+  - ZIP code: users[0].address.zip
+---
+id: your contact information
+generic object: ALIndividual
+question: |
+  What is your contact information?
+subquestion: |
+  The court or other parties might need to contact you about this case.
+
+  **This information will appear on your court forms.**
+  
+  If you do not want to list a phone number on your forms, leave it blank.
+
+  If you have an email address, you must list it. Be sure to check your email daily, otherwise you may miss important information about your case.
+
+  ${ collapse_template(contact_info_help) }  
+fields:  
+  - Phone number: x.phone_number
+    datatype: al_international_phone
+    required: False
+  - label: |
+      Do you have an email address?
+    field: x.has_email_address      
+    datatype: yesnoradio
+  - note: |
+      This email address will appear on your court forms. Be sure to check 
+      this email daily, otherwise you may miss important information about 
+      your case.
+    show if: x.has_email_address      
+  - Email address: x.email    
+    datatype: email
+    show if: 
+      variable: x.has_email_address
+      is: True
+---
+template: contact_info_help
+subject: |
+  **What if I don't want to list my email address?**
+content: |  
+  If you do not want to enter your personal email address, you can create a new email account to get email about your case.
+  
+  To make a new email account try one of these email services:
+  
+  * [**Gmail**](https://accounts.google.com/SignUp)
+  * [**Outlook**](https://outlook.live.com/owa/?nlp=1&signup=1)
+  * [**Yahoo**](https://login.yahoo.com/account/create?.lang=en-US&.intl=us)
+---
+id: e-signature
+question: |
+  Do you want to add your e-signature to your Citation to discover assets?
+subquestion: |
+  This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
+
+  If you do not add your **{e-signature}**, you must sign your paper forms before you file and deliver them.
+
+  <div class="alert alert-info ilao-info" role="alert">
+    <h6 class="alert-heading">What it means to sign your forms</h6>
+    <p>By signing your <i>Citation to discover assets</i>, you are certifying that:</p>
+    <p><ul>
+      <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
+      <li>You understand that making a false statement on the forms is perjury and has penalties provided by law.</li>
+    </ul></p>
+    <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+  </div>
+
+fields:
+  - "Add e-signature?": e_signature
+    datatype: yesnoradio
+terms:
+  - "e-signature": |
+      An e-signature is an electronic signature. It is a digital version of a signature that has the same effect as a hand-written signature.
+---
+id: forms assembling
+continue button field: forms_assembling
+question: |
+  Almost done
+subquestion: |
+  After you click **Next**, it may take a few moments to finish making your forms.
+  
+  ###### You do not need to refresh your screen. Hang in there!
+  
+  [NEWLINE]
+---
+id: get docs screen
+event: get_docs_screen
+question: |
+  Download
+subquestion: |
+  Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
+  
+  Read the instructions to learn what to do next.
+  
+  This program does not file your forms with the court or deliver them to ${other_parties[0].name.full(middle='full')}. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
+
+  **Note:** If you are e-filing, you can upload other documents as attachments during the e-filing process. If you are paper filing, bring copies of the documents to the clerk's office so you can attach them to the complaint.  
+  
+  ${ action_button_html(url_action('review_answers'), label=':edit: Make changes', color='success', size="md") }
+
+  ${ al_user_bundle.download_list_html() }
+ 
+  &nbsp;
+
+  ${ al_user_bundle.send_button_html(show_editable_checkbox=False) }
+  
+  **Note:** This program does not file your forms with the court or deliver them to ${other_parties[0].name.full(middle='full')}. You will need to do this yourself. Learn about [**e-filing in Illinois**](https://www.illinoiscourts.gov/eservices/information-for-filers-without-lawyers).
+
+  Thank you for using ILAO Easy Forms!
+under: |
+  % if not user_logged_in():
+  [${fa_icon("sign-in-alt", color="#0079d0", size="sm")} **Sign-in**](${url_of('login', next=interview_url())}) or [**create**](${url_of('register', next=interview_url())}) an ILAO Easy Form account to save your progress (optional).
+  % endif
+
+ 
+  ${ action_button_html(interview_url(i="docassemble.ILAO:feedback.yml", easy_form_interview=ilao_easy_form_url, easy_form_title=ilao_easy_form_title, easy_form_page=current_context().question_id, easy_form_variable=current_context().variable, local=False,reset=1), label=':comment: Was this program helpful?', color="#181c36", size="md", new_window=True) }
+---
+generic object: ALDocumentBundle
+template: x.send_email_template
+subject: |
+  Citation to Discover Assets to Debtor
+content: |
+  Your forms are attached.
+  
+  Thanks for using ILAO Easy Forms!
+  
+  [**Illinois Legal Aid Online**](https://www.illinoislegalaid.org)
