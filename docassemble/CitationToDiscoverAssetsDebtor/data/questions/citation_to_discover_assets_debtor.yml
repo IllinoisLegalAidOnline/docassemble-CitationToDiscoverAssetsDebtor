@@ -613,9 +613,9 @@ fields:
 ---
 template: calculating_interest
 subject: |
-  **Calculating interest**
+  **Example of calculating interest**
 content: |
-    Insert example here
+  If you had a judgment of $1,000 two years ago, you would multiply 1000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
 ---
 depends on:
   - already_paid_amount
