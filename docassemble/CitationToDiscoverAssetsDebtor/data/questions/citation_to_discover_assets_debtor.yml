@@ -8,7 +8,6 @@ metadata:
 ---
 include:
   - docassemble.AssemblyLine:assembly_line.yml
-  - docassemble.ALToolbox:phone-number-validation.yml
   - docassemble.ILAO:ilao-interview-framework.yml
   - docassemble.ILAO:shared-basic-questions.yml
 ---
@@ -31,7 +30,6 @@ code: |
 sections:
   - section_intro: Start
   - section_judgment: Judgment
-  - section_debtor: Debtor
   - section_case: Case details
   - section_user: About you
   - section_download: Download  
@@ -58,13 +56,14 @@ code: |
   set_progress(20)
   if judgment_date > today().minus(days=30):
     wait_note
-
-  nav.set_section('section_debtor')
   other_parties[0].name.first
   if other_parties[0].person_type == "business":
     if other_parties[0].has_agent:
       agent.name.first
   other_parties[0].address.address
+  judgment_amount
+  amount_still_owed
+
   set_progress(40)
 
   nav.set_section('section_case')
@@ -73,10 +72,10 @@ code: |
     cook_district
   courthouse_info
   case_number
-  judgment_amount
+  
   set_progress(60)
   #calculation_debug
-  amount_still_owed
+  
   hearing_date
   any_debtor_docs
 
@@ -123,15 +122,15 @@ code: |
 ---
 id: welcome
 question: |
-  Citation to discover assets to debtor
+  Citation to Discover Assets to Debtor
 subquestion: |
-  Welcome to Illinois Legal Aid Online's **Citation to discover assets to debtor** Easy Form.
+  Welcome to Illinois Legal Aid Online's **Citation to Discover Assets to Debtor** Easy Form.
 
-  This program helps you make forms to collect a money you won in a court judgment.
+  This program helps you make forms to collect money you won in a court judgment.
 
   A Citation to Discover Assets to Debtor will require the person or company ordered to pay you to come to court to answer questions about their property and income. You can then try to get that property or income to pay the judgment if it is not protected by law.
 
-  Learn more about [**finding out about a debtor's money, property, and income**](https://www.illinoislegalaid.org/legal-information/finding-out-about-debtors-money-property-and-income).
+  To learn more, read ILAO's article about [**finding out about a debtor's money, property, and income**](https://www.illinoislegalaid.org/legal-information/finding-out-about-debtors-money-property-and-income).
 field: sees_nav_bar
 ---
 id: instructions
@@ -139,13 +138,11 @@ continue button field: how_to_use
 question: |
   Instructions
 subquestion: |
-  To use this program you will need to know the:
+  To use this program you will need the:
 
   * Case number,
-  * Courthouse address if court hearing is in person,
-  * Circuit clerk phone, website, and remote hearing instructions if court hearing is remote, 
   * Name and address of the debtor,
-  * Date of judgment or the date it was renewed (revived),
+  * Date of judgment or the date it was renewed,
   * Amount of judgment, and
   * Amount that remains unpaid.
 
@@ -166,11 +163,11 @@ continue button field: about_citation
 question: |
   About the citation
 subquestion: |
-  A *Citation to discover assets to debtor* tells a debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can try to get that property or income to pay the judgment.
+  A *Citation to Discover Assets to Debtor* tells a debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can try to get that property or income to pay the judgment.
   
-  This citation only applies to the debtor. If you want the debtor's bank or employer to answer questions about the their property and income, you can use ILAO's [**collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
+  This citation only applies to the debtor. If you want the debtor's bank or employer to answer questions about the their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
   
-  You will need to serve the debtor with the citation. You can use a sheriff or private process server to do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
+  You will need to serve the debtor with the citation. The instructions page included with your forms has info about having a sheriff or private process server serve the debtor. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: judgment date
 question: |
@@ -180,7 +177,7 @@ subquestion: |
 
   You can collect a money judgment that is less than 7 years old. If your money judgment is over 7 years old, you can collect it if the judgment was **{renewed}**.
 
-  If your money judgment was issued after Jan 1, 2020, it can be renewed within 10 years of the judgment date. If it was issued before Jan 1, 2020, it can be renewed within 20 years of the judgment date. Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+  If your money judgment was issued after Jan 1, 2020, it can be renewed within 10 years of the judgment date. If it was issued before Jan 1, 2020, it can be renewed within 20 years of the judgment date. To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
 fields:
   - Judgment date: judgment_date
     datatype: ThreePartsDate
@@ -233,7 +230,7 @@ subquestion: |
   More than seven years have passed since ${judgment_date}. You have until ${judgment_date.plus(years=20)} to revive the judgment.  Check with your local circuit clerk's office to get a Petition to Revive.
   % endif
 
-  Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+  To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
 
   Click **Back** if you made a mistake. Or you can talk with a lawyer to discuss your options. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 buttons:
@@ -251,7 +248,7 @@ subquestion: |
   You may not be able to enforce the judgment, as more than 7 years have passed since you revived the judgment on ${renewal_date}. 
   % endif
 
-  Learn more about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+  To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
 
   Click **Back** if you made a mistake. Or you can talk with a lawyer to discuss your options. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 buttons:
@@ -269,7 +266,7 @@ subquestion: |
 ---
 id: party label
 question: |
-  What is your party label in the case?
+  What was your role in the case?
 subquestion: |
   ${ collapse_template(which_party) }  
 field: party_label
@@ -302,6 +299,8 @@ sets:
 id: debtor name
 question: |
   What is the debtor's name?
+subquestion: |
+  The **debtor** is the person owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
 fields:
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
@@ -311,8 +310,6 @@ question: |
   Does ${other_parties[i].name.full(middle='full')} have a registered agent?
 subquestion: |
   A registered agent is someone chosen by a business to receive court papers if the business is sued. You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
-  
-  Note: If ${other_parties[i].name.full(middle='full')} does not have a registered agent, be sure to include ${other_parties[i].name.full(middle='full')}'s owner as a defendant. You can add the owner by returning to the [**About the case**](${ url_action('section_case') }) section.
 fields:
   - no label: other_parties[i].has_agent
     datatype: yesnoradio
@@ -324,6 +321,7 @@ subquestion: |
   You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
 fields:
   - Registered agent: agent.name.first
+    maxlength: 50
 ---
 id: debtor address
 question: |
@@ -649,9 +647,15 @@ template: owed_example
 subject: |
   **Example of an amount still owed**
 content: |
-  If the original judgment said {other_parties[0].name.full(middle='full')} owed you $100 plus court costs, your court costs were $10, and the interest on the judgment was $9, the total amount owed would be $100 plus $10 plus $9, which is $119.
+  If the original judgment said ${other_parties[0].name.full(middle='full')} owed you $100 plus court costs, here's how the amount still owed could be calculated:
 
-  If {other_parties[0].name.full(middle='full')} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
+  * Original judgment: $100
+  * Court costs: $9
+  * Interest on judgment: $9 (9% of $100)
+  
+  The total amount owed would be $100 plus $10 plus $9, which is $119.
+
+  If ${other_parties[0].name.full(middle='full')} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
 ---
 id: hearing scheduled
 question: |
@@ -659,7 +663,7 @@ question: |
 subquestion: |
   In some counties, the circuit clerk can give you a hearing date before you file your case. This is sometimes called the Return Date. If you have that information now, you can add it to your forms.
   
-  If the clerk gives you the hearing date after you file your *Citation to discover assets* with the court, you can add it to your form later.
+  If the clerk gives you the hearing date after you file your *Citation to Discover Assets to Debtor* with the court, you can add it to your form later.
 
   You must add this information to the Citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
 fields:
@@ -717,7 +721,7 @@ fields:
     datatype: yesnoradio
   - What additional documents should they bring?: debtor_docs
     input type: area
-    rows: 2
+    rows: 5
     maxlength: 250
     js show if:
       val('any_debtor_docs') === true
@@ -939,12 +943,12 @@ attachment:
   name: citation_remaining_pages
   filename: citation_remaining_pages
   skip undefined: True
-  editable: False
+  editable: True
   pdf template file: citation_debtor_remaining_pages.pdf
   fields:
     - "plaintiff_name_2": ${users[0].name.full(middle='full') if plaintiff_or_petitioner else other_parties[0].name.full(middle='full')}
     - "defendant_name_2": ${other_parties[0].name.full(middle='full') if plaintiff_or_petitioner else users[0].name.full(middle='full')}
-    - "county_2": ${trial_court.address.county}
+    - "county_2": ${trial_court.address.county.upper()}
     - "case_number_2": ${case_number}
     - "case_number_3": ${case_number}
     - "case_number_4": ${case_number}
@@ -989,15 +993,6 @@ review:
         **Revival date:**
         ${renewal_date}
     show if: (today().minus(years=7) > judgment_date) and been_revived
----
-section: Debtor
-id: debtor review screen
-event: section_debtor
-question: |
-  Debtor
-subquestion: |
-  Edit your answers below.
-review:
   - Edit: other_parties[0].name.first
     button: |
       **Debtor's name:**
@@ -1064,14 +1059,7 @@ review:
     button: |
       **Case number:**
       ${case_number}
-  - Edit: judgment_amount
-    button: |
-      **Original judgment amount:**
-      ${currency(judgment_amount)}
-  - Edit: amount_still_owed
-    button: |
-      **Amount still owed:**
-      ${currency(amount_still_owed)}
+  
   - Edit: hearing_date
     button: |
       **Hearing date:**
@@ -1148,8 +1136,6 @@ review:
         **Revival date:**
         ${renewal_date}
     show if: (today().minus(years=7) > judgment_date) and been_revived
-  - note: |
-      <h4>Debtor</h4>
   - Edit: other_parties[0].name.first
     button: |
       **Debtor's name:**
@@ -1172,6 +1158,14 @@ review:
       **${other_parties[0].name.full(middle='full')}'s address:**
       % endif
       ${other_parties[0].address.on_one_line(bare=True)}
+  - Edit: judgment_amount
+    button: |
+      **Original judgment amount:**
+      ${currency(judgment_amount)}
+  - Edit: amount_still_owed
+    button: |
+      **Amount still owed:**
+      ${currency(amount_still_owed)}
   - note: |
       <h4>Case details</h4>
   - Edit: party_label
@@ -1209,14 +1203,6 @@ review:
     button: |
       **Case number:**
       ${case_number}
-  - Edit: judgment_amount
-    button: |
-      **Original judgment amount:**
-      ${currency(judgment_amount)}
-  - Edit: amount_still_owed
-    button: |
-      **Amount still owed:**
-      ${currency(amount_still_owed)}
   - Edit: hearing_date
     button: |
       **Hearing date:**
