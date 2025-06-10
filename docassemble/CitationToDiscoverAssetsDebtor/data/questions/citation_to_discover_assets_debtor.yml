@@ -1,6 +1,6 @@
 metadata:
-  title: Citation to discover assets to debtor
-  short title: Citation to discover assets
+  title: Citation to Discover Assets to Debtor
+  short title: Citation to Discover Assets
   comment: This program helps you make a form to collect on a money judgment directly from a debtor.
   authors:
     - Vivian McNaughton
@@ -18,13 +18,13 @@ objects:
   - court_list: ALCourtLoader.using(file_name='docassemble.ILAO:data/sources/il_courts.xlsx')
 ---
 code: |
-  ilao_easy_form_title = "Citation to discover assets to debtor"
+  ilao_easy_form_title = "Citation to Discover Assets to Debtor"
   ilao_easy_form_url = "https://www.illinoislegalaid.org/legal-information/citation-discover-assets-debtor"
   github_user = 'IllinoisLegalAidOnline'
   github_repo_name = 'docassemble-CitationToDiscoverAssetsDebtor'
   allowed_courts = ['Circuit']
   al_form_type = 'existing_case'
-  form_name = "Citation to discover assets to debtor"
+  form_name = "Citation to Discover Assets to Debtor"
 ---
 # Road map
 sections:
@@ -46,6 +46,7 @@ code: |
   about_citation
 
   nav.set_section('section_judgment')
+  other_parties[0].name.first
   if today().minus(years=7) > judgment_date:
     if not been_revived:
       cant_collect_kickout
@@ -56,11 +57,8 @@ code: |
   set_progress(20)
   if judgment_date > today().minus(days=30):
     wait_note
-  other_parties[0].name.first
-  if other_parties[0].person_type == "business":
-    if other_parties[0].has_agent:
-      agent.name.first
-  other_parties[0].address.address
+  
+  
   judgment_amount
   amount_still_owed
 
@@ -78,6 +76,11 @@ code: |
   
   hearing_date
   any_debtor_docs
+  service_reminder
+  if other_parties[0].person_type == "business":
+    if other_parties[0].has_agent:
+      agent.name.first
+  other_parties[0].address.address
 
   nav.set_section('section_user')
   set_progress(80)
@@ -128,7 +131,7 @@ subquestion: |
 
   This program helps you make forms to collect money you won in a court judgment.
 
-  A Citation to Discover Assets to Debtor will require the person or company ordered to pay you to come to court to answer questions about their property and income. You can then try to get that property or income to pay the judgment if it is not protected by law.
+  A *Citation to Discover Assets to Debtor* will require the person or company ordered to pay you to come to court to answer questions about their property and income. You can then try to get that property or income to pay the judgment if it is not protected by law.
 
   To learn more, read ILAO's article about [**finding out about a debtor's money, property, and income**](https://www.illinoislegalaid.org/legal-information/finding-out-about-debtors-money-property-and-income).
 field: sees_nav_bar
@@ -304,6 +307,17 @@ subquestion: |
 fields:
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
+---
+id: service reminder
+continue button field: service_reminder
+question: |
+  Serving ${other_parties[0].name.full(middle='full')}
+subquestion: |
+  After you file the *Citation* with the court, ${other_parties[0].name.full(middle='full')} will need to be served with a copy.
+
+  You cannot serve the *Citation* yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name.full(middle='full')}
+
+  The instructions page included with your forms has info about service. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: defendant agent check
 question: |
@@ -799,7 +813,7 @@ content: |
 ---
 id: e-signature
 question: |
-  Do you want to add your e-signature to your Citation to discover assets?
+  Do you want to add your e-signature to your *Citation to Discover Assets*?
 subquestion: |
   This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
 
@@ -807,7 +821,7 @@ subquestion: |
 
   <div class="alert alert-info ilao-info" role="alert">
     <h6 class="alert-heading">What it means to sign your forms</h6>
-    <p>By signing your <i>Citation to discover assets</i>, you are certifying that:</p>
+    <p>By signing your <i>Citation to Discover Assets</i>, you are certifying that:</p>
     <p><ul>
       <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
       <li>You understand that making a false statement on the forms is perjury and has penalties provided by law.</li>
@@ -838,7 +852,7 @@ event: get_docs_screen
 question: |
   Download
 subquestion: |
-  Your forms are ready. View and download your forms below. Click **Make changes** to fix any mistakes.
+  Your forms are ready. View and download your forms below. Click **:edit: Make changes** to fix any mistakes.
   
   Read the instructions to learn what to do next.
   
@@ -997,24 +1011,14 @@ review:
     button: |
       **Debtor's name:**
       ${other_parties[0].name.full(middle='full')}
-  - Edit: other_parties[0].has_agent
+  - Edit: judgment_amount
     button: |
-      **Does ${other_parties[0].name.first} have a registered agent?**
-      ${word(yesno(other_parties[0].has_agent))}
-    show if: other_parties[0].person_type == "business"
-  - Edit: agent.name.first
+      **Original judgment amount:**
+      ${currency(judgment_amount)}
+  - Edit: amount_still_owed
     button: |
-      **Agent's name:**
-      ${agent.name.full(middle='full')}
-    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
-  - Edit: other_parties[0].address.address
-    button: |
-      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name.full(middle='full')}'s address:**
-      % else:
-      **${other_parties[0].name.full(middle='full')}'s address:**
-      % endif
-      ${other_parties[0].address.on_one_line(bare=True)}
+      **Amount still owed:**
+      ${currency(amount_still_owed)}
 ---
 section: Case details
 id: case details review screen
@@ -1077,6 +1081,24 @@ review:
       **Should ${other_parties[0].name.full(middle='full')} bring additional documents?** 
       No
       % endif
+  - Edit: other_parties[0].has_agent
+    button: |
+      **Does ${other_parties[0].name.first} have a registered agent?**
+      ${word(yesno(other_parties[0].has_agent))}
+    show if: other_parties[0].person_type == "business"
+  - Edit: agent.name.first
+    button: |
+      **Agent's name:**
+      ${agent.name.full(middle='full')}
+    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
+  - Edit: other_parties[0].address.address
+    button: |
+      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
+      **${agent.name.full(middle='full')}'s address:**
+      % else:
+      **${other_parties[0].name.full(middle='full')}'s address:**
+      % endif
+      ${other_parties[0].address.on_one_line(bare=True)}
 ---
 section: About you
 id: user review screen
@@ -1140,24 +1162,6 @@ review:
     button: |
       **Debtor's name:**
       ${other_parties[0].name.full(middle='full')}
-  - Edit: other_parties[0].has_agent
-    button: |
-      **Does ${other_parties[0].name.first} have a registered agent?**
-      ${word(yesno(other_parties[0].has_agent))}
-    show if: other_parties[0].person_type == "business"
-  - Edit: agent.name.first
-    button: |
-      **Agent's name:**
-      ${agent.name.full(middle='full')}
-    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
-  - Edit: other_parties[0].address.address
-    button: |
-      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name.full(middle='full')}'s address:**
-      % else:
-      **${other_parties[0].name.full(middle='full')}'s address:**
-      % endif
-      ${other_parties[0].address.on_one_line(bare=True)}
   - Edit: judgment_amount
     button: |
       **Original judgment amount:**
@@ -1220,6 +1224,24 @@ review:
       **Should ${other_parties[0].name.full(middle='full')} bring additional documents?** 
       No
       % endif
+  - Edit: other_parties[0].has_agent
+    button: |
+      **Does ${other_parties[0].name.first} have a registered agent?**
+      ${word(yesno(other_parties[0].has_agent))}
+    show if: other_parties[0].person_type == "business"
+  - Edit: agent.name.first
+    button: |
+      **Agent's name:**
+      ${agent.name.full(middle='full')}
+    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
+  - Edit: other_parties[0].address.address
+    button: |
+      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
+      **${agent.name.full(middle='full')}'s address:**
+      % else:
+      **${other_parties[0].name.full(middle='full')}'s address:**
+      % endif
+      ${other_parties[0].address.on_one_line(bare=True)}
   - note: |
       <h4>About you</h4>
   - Edit: users[0].name.first
