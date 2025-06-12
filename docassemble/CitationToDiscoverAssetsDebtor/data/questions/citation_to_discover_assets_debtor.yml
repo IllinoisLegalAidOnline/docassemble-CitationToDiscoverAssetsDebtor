@@ -608,20 +608,24 @@ fields:
     help: |
       This is the amount that ${other_parties[0].name.full(middle='full')} was ordered to pay you in the ${judgment_date} judgment.
   - Your court costs: court_costs
+    required: False
     step: 0.01
     datatype: currency
     help: |
       These are costs such as filing fees and lawyers' fees. You should only include costs the court ordered ${other_parties[0].name.full(middle='full')} to pay. If the court did not order ${other_parties[0].name.full(middle='full')} to cover your court costs, you should leave this at zero.
   - Interest: interest_amount
+    required: False
     datatype: currency
     step: 0.01
     help: |
       The rate for post-judgment interest is 9% per year. This program does not calculate how much interest you are owed.
   - Amount already paid: already_paid_amount
+    required: False
     datatype: currency
     step: 0.01
     help: |
       This is the total amount of money ${other_parties[0].name.full(middle='full')} has already paid you. If ${other_parties[0].name.full(middle='full')} has not paid any of the judgment, you should leave this at zero.
+
 ---
 template: calculating_interest
 subject: |
@@ -1070,7 +1074,7 @@ review:
       % if hearing_date != "":
       * Date:${hearing_date}
       % else:
-      * fate: None entered
+      * Date: None entered
       % endif
       % if hearing_time != "":
       * Time: ${ format_time(hearing_time, "h:mm a") }
@@ -1240,7 +1244,7 @@ review:
       % if hearing_date != "":
       * Date:${hearing_date}
       % else:
-      * fate: None entered
+      * Date: None entered
       % endif
       % if hearing_time != "":
       * Time: ${ format_time(hearing_time, "h:mm a") }
