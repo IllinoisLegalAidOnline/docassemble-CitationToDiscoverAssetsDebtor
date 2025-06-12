@@ -1062,16 +1062,42 @@ review:
   - Edit: case_number
     button: |
       **Case number:**
-      ${case_number}
-  
+      ${case_number} 
   - Edit: hearing_date
     button: |
-      **Hearing date:**
+      **Hearing information:**
+      
       % if hearing_date != "":
-      ${hearing_date}
+      * Date:${hearing_date}
       % else:
-      I don't know
+      * fate: None entered
       % endif
+      % if hearing_time != "":
+      * Time: ${ format_time(hearing_time, "h:mm a") }
+      % else:
+      * Time: None entered
+      % endif
+      % if hearing_type == "person":
+      * Type: In person
+      % if courtroom != "":
+      * Courtroom: ${courtroom}
+      % else:
+      * Courtroom: None entered
+      % endif
+      % elif hearing_type == "remote":
+      * Type: By phone or video
+      % if remote_instructions != "":
+      * Instructions for attending: ${remote_instructions}
+      % else:
+      * Instructions for attending: None entered
+      % endif
+      % else:
+      * Type: None entered
+      % endif
+  - Edit: other_parties[0].name.first
+    button: |
+      **Debtor's name:**
+      ${other_parties[0].name.full(middle='full')}
   - Edit: any_debtor_docs
     button: |
       % if any_debtor_docs:
@@ -1209,11 +1235,34 @@ review:
       ${case_number}
   - Edit: hearing_date
     button: |
-      **Hearing date:**
+      **Hearing information:**
+      
       % if hearing_date != "":
-      ${hearing_date}
+      * Date:${hearing_date}
       % else:
-      I don't know
+      * fate: None entered
+      % endif
+      % if hearing_time != "":
+      * Time: ${ format_time(hearing_time, "h:mm a") }
+      % else:
+      * Time: None entered
+      % endif
+      % if hearing_type == "person":
+      * Type: In person
+      % if courtroom != "":
+      * Courtroom: ${courtroom}
+      % else:
+      * Courtroom: None entered
+      % endif
+      % elif hearing_type == "remote":
+      * Type: By phone or video
+      % if remote_instructions != "":
+      * Instructions for attending: ${remote_instructions}
+      % else:
+      * Instructions for attending: None entered
+      % endif
+      % else:
+      * Type: None entered
       % endif
   - Edit: any_debtor_docs
     button: |
