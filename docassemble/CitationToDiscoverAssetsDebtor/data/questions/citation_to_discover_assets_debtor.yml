@@ -144,10 +144,10 @@ subquestion: |
   To use this program you will need the:
 
   * Case number,
-  * Name and address of the debtor,
-  * Date of judgment or the date it was renewed,
-  * Amount of judgment, and
-  * Amount that remains unpaid.
+  * Name and address of the person or company who owes you money, also known as your debtor,
+  * Date of the judgment or the date it was renewed,
+  * Total amount of the judgment, and
+  * Amount that needs to be paid.
 
   Set aside 10 to 15 minutes to finish this program. You can log in and save your work to return to later. 
 
@@ -166,21 +166,19 @@ continue button field: about_citation
 question: |
   About the citation
 subquestion: |
-  A *Citation to Discover Assets to Debtor* tells a debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can try to get that property or income to pay the judgment.
+  A *Citation to Discover Assets to Debtor* tells the debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can use that information try to get that property or income to pay the judgment.
   
-  This citation only applies to the debtor. If you want the debtor's bank or employer to answer questions about the their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
+  This citation only applies to the debtor. If you want to ask the debtor's bank or employer to answer questions about their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
   
-  You will need to serve the debtor with the citation. The instructions page included with your forms has info about having a sheriff or private process server serve the debtor. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
+  You will need to serve the debtor with the citation. This means someone else will have to lawfully deliver the papers to the debtor.  The instructions page included with your forms has information about how a sheriff or private process server can do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: judgment date
 question: |
-  When was the judgment date?
+  When was the judgment entered?
 subquestion: |
-  This is the date the court ruled the other party owed you money.
+  This is the date the court ruled the other party owed you money. You can find this date by the judge's signature on the *Order*.
 
-  You can collect a money judgment that is less than 7 years old. If your money judgment is over 7 years old, you can collect it if the judgment was **{renewed}**.
-
-  If your money judgment was issued after Jan 1, 2020, it can be renewed within 10 years of the judgment date. If it was issued before Jan 1, 2020, it can be renewed within 20 years of the judgment date. To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
+  ${collapse_template(older_judgments)}
 fields:
   - Judgment date: judgment_date
     datatype: ThreePartsDate
@@ -188,13 +186,29 @@ fields:
     alMin: ${ today().minus(years=27) }
 terms: 
   - renewed: |
-      A money judgment is **renewed** or revived if the you filed a petition to revive judgment and the court agreed to revive it. 
+      A money judgment is **renewed** or revived if you filed a petition to revive judgment and the court agreed to revive it. 
+---
+template: older_judgments
+subject: |
+  **Collecting older judgments**
+content: |
+  You can collect a money judgment that is less than 7 years old. If your money judgment is over 7 years old, you can still collect it if the judgment was **{renewed}** on time.
+
+  * If your money judgment was entered after Jan 1, 2020, it can be renewed once within 10 years of the judgment date. 
+  
+  * If your money judgment was entered before Jan 1, 2020, it can be renewed within 20 years of the judgment date. 
+  
+  To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
 ---
 id: been revived date
 question: |
   Has the judgment been renewed?
 subquestion: |
-  A money judgment is **renewed** or revived if the you filed a petition to revive judgment and the court agreed to revive it. 
+  Your judgment is more than 7 years old. This means you can't file a *Citation to Discover Assets* unless the judgment has been **renewed**.
+  
+  A money judgment is **renewed** or revived if you filed a petition to revive judgment and the court agreed to revive it. 
+
+  To learn more, read ILAO's article about [**how long a judgment lasts**](https://www.illinoislegalaid.org/legal-information/how-long-does-judgment-last).
 fields:
   - no label: been_revived
     datatype: yesnoradio
@@ -263,7 +277,7 @@ continue button field: wait_note
 question: |
   Waiting 30 days
 subquestion: |
-  If you can, wait at least 30 days after your judgment to file your Citation.
+  If you can, wait at least 30 days after your judgment to file your citation.
 
   It becomes difficult for the debtor to challenge your judgment after 30 days.
 ---
@@ -303,7 +317,7 @@ id: debtor name
 question: |
   What is the debtor's name?
 subquestion: |
-  The **debtor** is the person owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
+  The **debtor** is the person or business owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
 fields:
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
@@ -313,9 +327,9 @@ continue button field: service_reminder
 question: |
   Serving ${other_parties[0].name.full(middle='full')}
 subquestion: |
-  After you file the *Citation* with the court, ${other_parties[0].name.full(middle='full')} will need to be served with a copy.
+  After you file the *Citation to Discover Assets* with the court, ${other_parties[0].name.full(middle='full')} will need to be served with a copy.
 
-  You cannot serve the *Citation* yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name.full(middle='full')}
+  You cannot serve the citation yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name.full(middle='full')}
 
   The instructions page included with your forms has info about service. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
@@ -598,7 +612,7 @@ question: |
 subquestion: |
   This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name.full(middle='full')} has already paid you.
 
-  The rate for post-judgment interest is 9% per year. This can be complicated by how much time has passed and if ${other_parties[0].name.full(middle='full')} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+  The rate for post-judgment interest is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name.full(middle='full')} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 
   ${collapse_template(calculating_interest)}
 fields:
@@ -631,6 +645,8 @@ template: calculating_interest
 subject: |
   **Example of calculating interest**
 content: |
+  The 9% interest rate is calculated as simple interest.
+  
   If you had a judgment of $1,000 two years ago, you would multiply 1000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
 ---
 depends on:
@@ -683,7 +699,7 @@ subquestion: |
   
   If the clerk gives you the hearing date after you file your *Citation to Discover Assets to Debtor* with the court, you can add it to your form later.
 
-  You must add this information to the Citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
+  You must add this information to the citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
 fields:
   - "Know court date and time?": has_court_date
     datatype: yesnoradio
@@ -694,7 +710,7 @@ question: |
 subquestion: |
   Enter the date, time, and courtroom information for your citation hearing.
 
-  If you do not know this yet, you can leave these fields blank. You must add this information to the Citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
+  If you do not know this yet, you can leave these fields blank. You must add this information to the citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
 fields:
   - Date: hearing_date
     datatype: date
@@ -817,7 +833,7 @@ content: |
 ---
 id: e-signature
 question: |
-  Do you want to add your e-signature to your *Citation to Discover Assets*?
+  Do you want to add your e-signature to your *Citation to Discover Assets to Debtor*?
 subquestion: |
   This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
 
@@ -825,7 +841,7 @@ subquestion: |
 
   <div class="alert alert-info ilao-info" role="alert">
     <h6 class="alert-heading">What it means to sign your forms</h6>
-    <p>By signing your <i>Citation to Discover Assets</i>, you are certifying that:</p>
+    <p>By signing your <i>Citation to Discover Assets to Debtor</i>, you are certifying that:</p>
     <p><ul>
       <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
       <li>You understand that making a false statement on the forms is perjury and has penalties provided by law.</li>
@@ -894,8 +910,8 @@ content: |
 ---
 objects:
   - instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
-  - citation_first_page: ALDocument.using(title="Citation", filename="citation_first_page.pdf", has_addendum=False)
-  - citation_remaining_pages: ALDocument.using(title="Citation", filename="citation_remaining_pages.pdf", has_addendum=False)
+  - citation_first_page: ALDocument.using(title="Citation to Discover Assets", filename="citation_first_page.pdf", has_addendum=False)
+  - citation_remaining_pages: ALDocument.using(title="Citation to Discover Assets", filename="citation_remaining_pages.pdf", has_addendum=False)
 ---
 objects:
   - citation_bundle: ALDocumentBundle.using(elements=[citation_first_page, citation_remaining_pages], filename="citation_to_discover_assets_to_debtor.pdf", title = "Citation to Discover Assets to Debtor")
