@@ -46,6 +46,7 @@ code: |
   about_citation
 
   nav.set_section('section_judgment')
+  
   other_parties[0].name.first
   if today().minus(years=7) > judgment_date:
     if not been_revived:
@@ -66,6 +67,8 @@ code: |
 
   nav.set_section('section_case')
   plaintiff_or_petitioner
+  users.gather()
+  other_parties.gather()
   if trial_court_index == -1:
     cook_district
   courthouse_info
@@ -121,7 +124,16 @@ code: |
 code: |
   reconsider('snapshot_interview_state')
   snapshot_forms = True
-
+---
+# other parties gather loop
+code: |
+  other_parties[i].name.first
+  other_parties[i].complete = True
+---
+# users gather loop
+code: |
+  users[i].name.first
+  users[i].complete = True
 ---
 id: welcome
 question: |
@@ -144,10 +156,10 @@ subquestion: |
   To use this program you will need the:
 
   * Case number,
-  * Name and address of the person or company who owes you money, also known as your debtor,
+  * Name and address of the person or company who owes you money, also known as the debtor,
   * Date of the judgment or the date it was renewed,
   * Total amount of the judgment, and
-  * Amount that needs to be paid.
+  * Amount that still needs to be paid.
 
   Set aside 10 to 15 minutes to finish this program. You can log in and save your work to return to later. 
 
@@ -168,9 +180,9 @@ question: |
 subquestion: |
   A *Citation to Discover Assets to Debtor* tells the debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can use that information try to get that property or income to pay the judgment.
   
-  This citation only applies to the debtor. If you want to ask the debtor's bank or employer to answer questions about their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
+  This citation only applies to the debtor. If you want to ask the debtor's bank or employer to answer questions about their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer Easy Form**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
   
-  You will need to serve the debtor with the citation. This means someone else will have to lawfully deliver the papers to the debtor.  The instructions page included with your forms has information about how a sheriff or private process server can do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
+  You will need to serve the debtor with the citation. This means someone else will have to lawfully deliver the papers to the debtor. The instructions you can download with your forms has information about how a sheriff or private process server can do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: judgment date
 question: |
@@ -306,21 +318,48 @@ content: |
 depends on:
   - party_label
 code: |
-  if party_label == "plaintiff" or party_label == "petitioner":
+  if party_label == "plaintiff":
     plaintiff_or_petitioner = True
-  if party_label == "defendant" or party_label == "respondent":
+    opposing_party = "defendant"
+  elif party_label == "petitioner":
+    plaintiff_or_petitioner = True
+    opposing_party = "respondent"
+  elif party_label == "defendant":
     plaintiff_or_petitioner = False
+    opposing_party = "plaintiff"
+  elif party_label == "respondent":
+    plaintiff_or_petitioner = False
+    opposing_party = "petitioner"
 ---
 sets:
   - other_parties[i].name.first
-id: debtor name
+id: other parties name
 question: |
+  % if i == 0:
   What is the debtor's name?
+  % else:
+  Who was the ${ordinal(i)} ${opposing_party} in the case? 
+  % endif
 subquestion: |
-  The **debtor** is the person or business owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
+  % if i == 0:
+  The **debtor** is the person or business that owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
+
+  A business and its owner may have both parties in the original case. You should enter which of the two the court ordered to pay you.
+  % endif
 fields:
   - code: |
       other_parties[i].name_fields(person_or_business='unsure')
+---
+id: other parties there is another
+question: |
+  Are there any other ${opposing_party}s in this case?
+subquestion: |
+  % if len(other_parties.elements) >= 1:  
+  So far you have told us about ${other_parties.full_names()}.
+  % endif
+fields:
+  - no label: other_parties.there_is_another
+    datatype: yesnoradio
 ---
 id: service reminder
 continue button field: service_reminder
@@ -632,7 +671,7 @@ fields:
     datatype: currency
     step: 0.01
     help: |
-      The rate for post-judgment interest is 9% per year. This program does not calculate how much interest you are owed.
+      The rate for post-judgment simple interest is 9% per year. This program does not calculate how much interest you are owed.
   - Amount already paid: already_paid_amount
     required: False
     datatype: currency
@@ -645,9 +684,9 @@ template: calculating_interest
 subject: |
   **Example of calculating interest**
 content: |
-  The 9% interest rate is calculated as simple interest.
+  The 9% interest rate is calculated as simple interest on the amount that is unpaid.
   
-  If you had a judgment of $1,000 two years ago, you would multiply 1000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  If you had a judgment of $1,000 two years ago, you would multiply 1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
 ---
 depends on:
   - already_paid_amount
@@ -760,17 +799,50 @@ fields:
     js show if:
       val('any_debtor_docs') === true
 ---
-id: user name
 sets:
-    - users[0].name.first
-    - users[0].name.last
-    - users[0].name.middle
-    - users[0].name.suffix
-question:  |
+  - users[i].name.first
+id: users names
+question: |
+  % if i == 0:
+  What is your name?
+  % else:
+  What is the name of the ${ ordinal(i) } ${party_label}?
+  % endif
+subquestion: |
+  % if i != 0:
+  ${ collapse_template(long_name_help) }
+  % endif
+fields:
+  - code: |
+        users[i].name_fields(person_or_business='unsure')
+---
+sets:
+  - users[0].name.first
+id: user zero name
+question: |
   What is your name?
 fields:
   - code: |
       users[0].name_fields()
+---
+template: long_name_help
+subject: |
+  **What if I need more space?**
+content: |
+  If the person has a long name like "Jane Smith, Director of Housing," select **Business or organization**. You can then enter the full name and title.
+---
+id: any other users
+question: |
+    Was anyone else on your side of the case?
+subquestion: |
+  % if len(users.elements) > 1:  
+  So far you have told us about ${users.full_names()}.
+  % else:
+  If there are other ${party_label}s besides you, click **Yes**.
+  % endif
+fields:
+  - no label: users.there_is_another
+    datatype: yesnoradio
 ---
 id: user address
 question: |
@@ -946,8 +1018,24 @@ attachment:
   fields:
     - "county_1": ${trial_court.address.county.upper()}
     - "case_number_1": ${case_number}
-    - "plaintiff_name_1": ${users[0].name.full(middle='full') if plaintiff_or_petitioner else other_parties[0].name.full(middle='full')}
-    - "defendant_name_1": ${other_parties[0].name.full(middle='full') if plaintiff_or_petitioner else users[0].name.full(middle='full')}
+    - "plaintiff_list": |
+        % if plaintiff_or_petitioner:
+        ${users.full_names()}
+        % else:
+        ${other_parties.full_names()}
+        % endif
+    - "defendant_name_1": |
+        % if plaintiff_or_petitioner and other_parties.number_gathered() == 1:
+        ${other_parties.full_names()}
+        % elif users.number_gathered() == 1 and not plaintiff_or_petitioner:
+        ${users.full_names()}
+        % endif
+    - "defendant_list": |
+        % if plaintiff_or_petitioner and other_parties.number_gathered() > 1:
+        ${other_parties.full_names()}
+        % elif users.number_gathered() > 1 and not plaintiff_or_petitioner:
+        ${users.full_names()}
+        % endif
     - "debtor_name_1": |
         % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
         ${agent.name.full(middle='full')} (registered agent for ${other_parties[0].name.full(middle='full')})
@@ -980,8 +1068,24 @@ attachment:
   editable: True
   pdf template file: citation_debtor_remaining_pages.pdf
   fields:
-    - "plaintiff_name_2": ${users[0].name.full(middle='full') if plaintiff_or_petitioner else other_parties[0].name.full(middle='full')}
-    - "defendant_name_2": ${other_parties[0].name.full(middle='full') if plaintiff_or_petitioner else users[0].name.full(middle='full')}
+    - "plaintiff_list": |
+        % if plaintiff_or_petitioner:
+        ${users.full_names()}
+        % else:
+        ${other_parties.full_names()}
+        % endif
+    - "defendant_name_1": |
+        % if plaintiff_or_petitioner and other_parties.number_gathered() == 1:
+        ${other_parties.full_names()}
+        % elif users.number_gathered() == 1 and not plaintiff_or_petitioner:
+        ${users.full_names()}
+        % endif
+    - "defendant_list": |
+        % if plaintiff_or_petitioner and other_parties.number_gathered() > 1:
+        ${other_parties.full_names()}
+        % elif users.number_gathered() > 1 and not plaintiff_or_petitioner:
+        ${users.full_names()}
+        % endif
     - "county_2": ${trial_court.address.county.upper()}
     - "case_number_2": ${case_number}
     - "case_number_3": ${case_number}
@@ -1040,6 +1144,46 @@ review:
       **Amount still owed:**
       ${currency(amount_still_owed)}
 ---
+id: users review screen
+continue button field: users.revisit
+section: Case info
+question: |
+  Edit your party
+subquestion: |
+  ${ users.table }
+
+  ${ users.add_action() }
+---
+table: users.table
+rows: users
+columns:
+  - Name: |
+      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+  - Party: |
+      action_button_html(url_action(row_item.attr_name("review_user_delivery")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+---
+id: other parties review screen
+continue button field: other_parties.revisit
+section: Case info
+question: |
+    Edit the plaintiffs
+subquestion: |
+  ${ other_parties.table }
+
+  ${ other_parties.add_action() }
+---
+table: other_parties.table
+rows: other_parties
+columns:
+  - Name: |
+      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+  - Party: |
+      action_button_html(url_action(row_item.attr_name("review_other_delivery")), label="Edit", icon="pencil-alt")
+delete buttons: True
+confirm: True
+---
 section: Case details
 id: case details review screen
 event: section_case
@@ -1052,6 +1196,20 @@ review:
     button: |
       **Your party label:**
       ${capitalize(party_label)}
+  - Edit: users.revisit
+    button: |
+      **Your party: (Edit to change name))**
+
+      % for my_var in users:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+  - Edit: other_parties.revisit
+    button: |
+      **The other party: (Edit to change name))**
+
+      % for my_var in other_parties:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
   - Edit: trial_court_index
     button: |
       **You are filing in:**
@@ -1114,10 +1272,6 @@ review:
       % else:
       * Type: None entered
       % endif
-  - Edit: other_parties[0].name.first
-    button: |
-      **Debtor's name:**
-      ${other_parties[0].name.full(middle='full')}
   - Edit: any_debtor_docs
     button: |
       % if any_debtor_docs:
@@ -1222,6 +1376,20 @@ review:
     button: |
       **Your party label:**
       ${capitalize(party_label)}
+  - Edit: users.revisit
+    button: |
+      **Your party: (Edit to change name))**
+
+      % for my_var in users:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
+  - Edit: other_parties.revisit
+    button: |
+      **The other party: (Edit to change name))**
+
+      % for my_var in other_parties:
+        * ${ my_var.name.full(middle="full") }
+      % endfor
   - Edit: trial_court_index
     button: |
       **You are filing in:**
@@ -1252,7 +1420,7 @@ review:
   - Edit: case_number
     button: |
       **Case number:**
-      ${case_number}
+      ${case_number} 
   - Edit: hearing_date
     button: |
       **Hearing information:**
