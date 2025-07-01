@@ -364,17 +364,17 @@ fields:
 id: service reminder
 continue button field: service_reminder
 question: |
-  Serving ${other_parties[0].name.full(middle='full')}
+  Serving ${other_parties[0].name_full()}
 subquestion: |
-  After you file the *Citation to Discover Assets* with the court, ${other_parties[0].name.full(middle='full')} will need to be served with a copy.
+  After you file the *Citation to Discover Assets* with the court, ${other_parties[0].name_full()} will need to be served with a copy.
 
-  You cannot serve the citation yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name.full(middle='full')}
+  You cannot serve the citation yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name_full()}
 
   The instructions page included with your forms has info about service. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: defendant agent check
 question: |
-  Does ${other_parties[i].name.full(middle='full')} have a registered agent?
+  Does ${other_parties[i].name_full()} have a registered agent?
 subquestion: |
   A registered agent is someone chosen by a business to receive court papers if the business is sued. You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
 fields:
@@ -383,7 +383,7 @@ fields:
 ---
 id: defendant agent name
 question: |
-  Who is ${other_parties[0].name.full(middle='full')}'s registered agent?
+  Who is ${other_parties[0].name_full()}'s registered agent?
 subquestion: |
   You may be able to find this information from the [**Illinois Secretary of State**](https://apps.ilsos.gov/businessentitysearch/).
 fields:
@@ -393,9 +393,9 @@ fields:
 id: debtor address
 question: |
   % if other_parties[i].person_type == "business" and other_parties[i].has_agent:
-  What is ${agent.name.full(middle='full')}'s address?
+  What is ${agent.name_full()}'s address?
   % else:
-   What is ${other_parties[i].name.full(middle='full')}'s address?
+   What is ${other_parties[i].name_full()}'s address?
   % endif
 fields:
   - Street address: other_parties[i].address.address
@@ -647,11 +647,11 @@ fields:
 ---
 id: judgment amount
 question: |
-  Tell us about the amount ${other_parties[0].name.full(middle='full')} still owes you
+  Tell us about the amount ${other_parties[0].name_full()} still owes you
 subquestion: |
-  This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name.full(middle='full')} has already paid you.
+  This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name_full()} has already paid you.
 
-  The rate for post-judgment interest is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name.full(middle='full')} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+  The rate for post-judgment interest is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 
   ${collapse_template(calculating_interest)}
 fields:
@@ -659,13 +659,13 @@ fields:
     datatype: currency
     step: 0.01
     help: |
-      This is the amount that ${other_parties[0].name.full(middle='full')} was ordered to pay you in the ${judgment_date} judgment.
+      This is the amount that ${other_parties[0].name_full()} was ordered to pay you in the ${judgment_date} judgment.
   - Your court costs: court_costs
     required: False
     step: 0.01
     datatype: currency
     help: |
-      These are costs such as filing fees and lawyers' fees. You should only include costs the court ordered ${other_parties[0].name.full(middle='full')} to pay. If the court did not order ${other_parties[0].name.full(middle='full')} to cover your court costs, you should leave this at zero.
+      These are costs such as filing fees and lawyers' fees. You should only include costs the court ordered ${other_parties[0].name_full()} to pay. If the court did not order ${other_parties[0].name_full()} to cover your court costs, you should leave this at zero.
   - Interest: interest_amount
     required: False
     datatype: currency
@@ -677,7 +677,7 @@ fields:
     datatype: currency
     step: 0.01
     help: |
-      This is the total amount of money ${other_parties[0].name.full(middle='full')} has already paid you. If ${other_parties[0].name.full(middle='full')} has not paid any of the judgment, you should leave this at zero.
+      This is the total amount of money ${other_parties[0].name_full()} has already paid you. If ${other_parties[0].name_full()} has not paid any of the judgment, you should leave this at zero.
 
 ---
 template: calculating_interest
@@ -705,9 +705,9 @@ subquestion: |
 ---
 id: calculated amount still owed
 question: |
-  How much does ${other_parties[0].name.full(middle='full')} still owe you?
+  How much does ${other_parties[0].name_full()} still owe you?
 subquestion: |
-  According to your previous answers, ${other_parties[0].name.full(middle='full')} still owes you ${currency(amount_still_owed_default)}. If that amount is correct, you can click **Next**. If it seems wrong, you can edit the amount owed.
+  According to your previous answers, ${other_parties[0].name_full()} still owes you ${currency(amount_still_owed_default)}. If that amount is correct, you can click **Next**. If it seems wrong, you can edit the amount owed.
 
   ${collapse_template(owed_example)}
 fields:
@@ -720,7 +720,7 @@ template: owed_example
 subject: |
   **Example of an amount still owed**
 content: |
-  If the original judgment said ${other_parties[0].name.full(middle='full')} owed you $100 plus court costs, here's how the amount still owed could be calculated:
+  If the original judgment said ${other_parties[0].name_full()} owed you $100 plus court costs, here's how the amount still owed could be calculated:
 
   * Original judgment: $100
   * Court costs: $9
@@ -728,7 +728,7 @@ content: |
   
   The total amount owed would be $100 plus $10 plus $9, which is $119.
 
-  If ${other_parties[0].name.full(middle='full')} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
+  If ${other_parties[0].name_full()} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
 ---
 id: hearing scheduled
 question: |
@@ -738,7 +738,7 @@ subquestion: |
   
   If the clerk gives you the hearing date after you file your *Citation to Discover Assets to Debtor* with the court, you can add it to your form later.
 
-  You must add this information to the citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
+  You must add this information to the citation before you deliver it to ${other_parties[0].name_full()}.
 fields:
   - "Know court date and time?": has_court_date
     datatype: yesnoradio
@@ -749,7 +749,7 @@ question: |
 subquestion: |
   Enter the date, time, and courtroom information for your citation hearing.
 
-  If you do not know this yet, you can leave these fields blank. You must add this information to the citation before you deliver it to ${other_parties[0].name.full(middle='full')}.
+  If you do not know this yet, you can leave these fields blank. You must add this information to the citation before you deliver it to ${other_parties[0].name_full()}.
 fields:
   - Date: hearing_date
     datatype: date
@@ -777,9 +777,9 @@ fields:
 ---
 id: any debtor docs
 question: |
-  Do you want ${other_parties[0].name.full(middle='full')} to bring additional documents to court?
+  Do you want ${other_parties[0].name_full()} to bring additional documents to court?
 subquestion: |
-  The citation will tell ${other_parties[0].name.full(middle='full')} to bring these documents:
+  The citation will tell ${other_parties[0].name_full()} to bring these documents:
 
   * Federal and state income taxes for the last 2 years,
   * Recent pay stubs or proof of income,
@@ -788,9 +788,9 @@ subquestion: |
   * Deed to any property they own, and
   * Insurance policies.
 
-  You only need to click **Yes** if you want ${other_parties[0].name.full(middle='full')} to bring something in addition to the above documents.
+  You only need to click **Yes** if you want ${other_parties[0].name_full()} to bring something in addition to the above documents.
 fields:
-  - Should ${other_parties[0].name.full(middle='full')} bring additional documents?: any_debtor_docs
+  - Should ${other_parties[0].name_full()} bring additional documents?: any_debtor_docs
     datatype: yesnoradio
   - What additional documents should they bring?: debtor_docs
     input type: area
@@ -907,7 +907,7 @@ id: e-signature
 question: |
   Do you want to add your e-signature to your *Citation to Discover Assets to Debtor*?
 subquestion: |
-  This program can put “**/s/ ${users[0].name.full(middle='full')}**” where you would sign your name. The court will accept this as your signature.
+  This program can put “**/s/ ${users[0].name_full()}**” where you would sign your name. The court will accept this as your signature.
 
   If you do not add your **{e-signature}**, you must sign your paper forms before you file and deliver them.
 
@@ -1038,9 +1038,9 @@ attachment:
         % endif
     - "debtor_name_1": |
         % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-        ${agent.name.full(middle='full')} (registered agent for ${other_parties[0].name.full(middle='full')})
+        ${agent.name_full()} (registered agent for ${other_parties[0].name_full()})
         % else:
-        ${other_parties[0].name.full(middle='full')}
+        ${other_parties[0].name_full()}
         % endif
     - "debtor_street": ${other_parties[0].address.line_one(bare=True)}
     - "debtor_csz": ${other_parties[0].address.line_two()}
@@ -1102,8 +1102,8 @@ attachment:
     - "judgment_amount": ${currency(judgment_amount, symbol=u'')}
     - "owed_amount": ${currency(amount_still_owed, symbol=u'')}
     - "other_docs": ${debtor_docs if any_debtor_docs else ""}
-    - "e_signature": ${users[0].name.full(middle='full') if e_signature else ""}
-    - "user_name_1": ${users[0].name.full(middle='full') }
+    - "e_signature": ${users[0].name_full() if e_signature else ""}
+    - "user_name_1": ${users[0].name_full() }
     - "user_street": ${users[0].address.line_one(bare=True)}
     - "user_csz": ${users[0].address.line_two()}
     - "user_email": ${users[0].email if users[0].has_email_address else ""}
@@ -1134,7 +1134,7 @@ review:
   - Edit: other_parties[0].name.first
     button: |
       **Debtor's name:**
-      ${other_parties[0].name.full(middle='full')}
+      ${other_parties[0].name_full()}
   - Edit: judgment_amount
     button: |
       **Original judgment amount:**
@@ -1158,7 +1158,7 @@ table: users.table
 rows: users
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
   - Party: |
       action_button_html(url_action(row_item.attr_name("review_user_delivery")), label="Edit", icon="pencil-alt")
 delete buttons: True
@@ -1178,7 +1178,7 @@ table: other_parties.table
 rows: other_parties
 columns:
   - Name: |
-      row_item.name.full(middle="full") if defined("row_item.name.first") else ""
+      row_item.name_full() if defined("row_item.name.first") else ""
   - Party: |
       action_button_html(url_action(row_item.attr_name("review_other_delivery")), label="Edit", icon="pencil-alt")
 delete buttons: True
@@ -1201,14 +1201,14 @@ review:
       **Your party: (Edit to change name))**
 
       % for my_var in users:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
   - Edit: other_parties.revisit
     button: |
       **The other party: (Edit to change name))**
 
       % for my_var in other_parties:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
   - Edit: trial_court_index
     button: |
@@ -1275,10 +1275,10 @@ review:
   - Edit: any_debtor_docs
     button: |
       % if any_debtor_docs:
-      **What additional documents should ${other_parties[0].name.full(middle='full')} bring?**
+      **What additional documents should ${other_parties[0].name_full()} bring?**
       ${debtor_docs}
       % else:
-      **Should ${other_parties[0].name.full(middle='full')} bring additional documents?** 
+      **Should ${other_parties[0].name_full()} bring additional documents?** 
       No
       % endif
   - Edit: other_parties[0].has_agent
@@ -1289,14 +1289,14 @@ review:
   - Edit: agent.name.first
     button: |
       **Agent's name:**
-      ${agent.name.full(middle='full')}
+      ${agent.name_full()}
     show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
   - Edit: other_parties[0].address.address
     button: |
       % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name.full(middle='full')}'s address:**
+      **${agent.name_full()}'s address:**
       % else:
-      **${other_parties[0].name.full(middle='full')}'s address:**
+      **${other_parties[0].name_full()}'s address:**
       % endif
       ${other_parties[0].address.on_one_line(bare=True)}
 ---
@@ -1311,7 +1311,7 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${users[0].name.full(middle='full')}
+      ${users[0].name_full()}
   - Edit: users[0].address.address
     button: |
       **Your address:**
@@ -1361,7 +1361,7 @@ review:
   - Edit: other_parties[0].name.first
     button: |
       **Debtor's name:**
-      ${other_parties[0].name.full(middle='full')}
+      ${other_parties[0].name_full()}
   - Edit: judgment_amount
     button: |
       **Original judgment amount:**
@@ -1381,14 +1381,14 @@ review:
       **Your party: (Edit to change name))**
 
       % for my_var in users:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
   - Edit: other_parties.revisit
     button: |
       **The other party: (Edit to change name))**
 
       % for my_var in other_parties:
-        * ${ my_var.name.full(middle="full") }
+        * ${ my_var.name_full() }
       % endfor
   - Edit: trial_court_index
     button: |
@@ -1455,10 +1455,10 @@ review:
   - Edit: any_debtor_docs
     button: |
       % if any_debtor_docs:
-      **What additional documents should ${other_parties[0].name.full(middle='full')} bring?**
+      **What additional documents should ${other_parties[0].name_full()} bring?**
       ${debtor_docs}
       % else:
-      **Should ${other_parties[0].name.full(middle='full')} bring additional documents?** 
+      **Should ${other_parties[0].name_full()} bring additional documents?** 
       No
       % endif
   - Edit: other_parties[0].has_agent
@@ -1469,14 +1469,14 @@ review:
   - Edit: agent.name.first
     button: |
       **Agent's name:**
-      ${agent.name.full(middle='full')}
+      ${agent.name_full()}
     show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
   - Edit: other_parties[0].address.address
     button: |
       % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name.full(middle='full')}'s address:**
+      **${agent.name_full()}'s address:**
       % else:
-      **${other_parties[0].name.full(middle='full')}'s address:**
+      **${other_parties[0].name_full()}'s address:**
       % endif
       ${other_parties[0].address.on_one_line(bare=True)}
   - note: |
@@ -1484,7 +1484,7 @@ review:
   - Edit: users[0].name.first
     button: |
       **Your name:**
-      ${users[0].name.full(middle='full')}
+      ${users[0].name_full()}
   - Edit: users[0].address.address
     button: |
       **Your address:**
