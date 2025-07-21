@@ -81,12 +81,13 @@ code: |
   #calculation_debug
   
   hearing_date
-  any_debtor_docs
+  
   service_reminder
   if other_parties[0].person_type == "business":
     if other_parties[0].has_agent:
       agent.name.first
   other_parties[0].address.address
+  any_debtor_docs
 
   nav.set_section('section_user')
   set_progress(80)
@@ -142,7 +143,7 @@ id: welcome
 question: |
   Citation to Discover Assets to Debtor
 subquestion: |
-  Welcome to Illinois Legal Aid Online's **Citation to Discover Assets to Debtor** Easy Form.
+  Welcome to Illinois Legal Aid Online's **Citation to discover assets to debtor** Easy Form.
 
   This program helps you make forms to collect money you won in a court judgment.
 
@@ -183,7 +184,7 @@ question: |
 subquestion: |
   A *Citation to Discover Assets to Debtor* tells the debtor to come to court to answer questions about their property and income. After the debtor answers your questions, you can use that information try to get that property or income to pay the judgment.
   
-  This citation only applies to the debtor. If you want to ask the debtor's bank or employer to answer questions about their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer Easy Form**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer)
+  This citation only applies to the debtor. If you want to ask the debtor's bank or employer to answer questions about their property and income, you can use ILAO's [**Collect a judgment from debtor's bank or employer**](https://www.illinoislegalaid.org/legal-information/collect-judgment-debtors-bank-or-employer) Easy Form.
   
   You will need to serve the debtor with the citation. This means someone else will have to lawfully deliver the papers to the debtor. The instructions you can download with your forms has information about how a sheriff or private process server can do this. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
@@ -669,12 +670,19 @@ fields:
 ---
 id: judgment amount
 question: |
-  Tell us about the amount ${other_parties[0].name_full()} still owes you
+  Details about the amount ${other_parties[0].name_full()} still owes you
 subquestion: |
   This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name_full()} has already paid you.
+  
+  % if (judgment_date > as_datetime('12/31/2019')):
+  The simple interest rate on the unpaid amount can vary. If the judgment is a **{consumer debt judgment}** of $25,000 or less, the simple interest rate is 5% per year. Otherwise, the simple interest rate is 9% per year. 
+  
+  Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 
-  The rate for post-judgment interest is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
-
+  % else:
+  The simple interest rate on the unpaid amount is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+  
+  % endif
   ${collapse_template(calculating_interest)}
 fields:
   - Judgment amount: judgment_amount
@@ -693,7 +701,11 @@ fields:
     datatype: currency
     step: 0.01
     help: |
-      The rate for post-judgment simple interest is 9% per year. This program does not calculate how much interest you are owed.
+      % if (judgment_date > as_datetime('12/31/2019')):
+      The rate for post-judgment simple interest is either 5% per year or 9% per year on the unpaid amount of the judgment. The rate is 5% for consumer debt judgments for $25,000 or less, and 9% for other judgments. This program does not calculate how much interest you are owed.
+      % else:
+      The rate for post-judgment simple interest is 9% per year on the unpaid amount of the judgment. This program does not calculate how much interest you are owed.
+      % endif
   - Amount already paid: already_paid_amount
     required: False
     datatype: currency
@@ -706,9 +718,15 @@ template: calculating_interest
 subject: |
   **Example of calculating interest**
 content: |
-  The 9% interest rate is calculated as simple interest on the amount that is unpaid.
+  % if (judgment_date > as_datetime('12/31/2019')):
+  The interest rate is calculated as simple interest on the unpaid amount.
   
-  If you had a judgment of $1,000 two years ago, you would multiply 1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  Imagine you had a judgment of $1,000 two years ago, and it was not for consumer debt. The simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  % else:
+  The 9% interest rate is calculated as simple interest on the unpaid amount.
+
+  If you had a judgment of $1,000 two years ago, and it was not for consumer debt. The simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  % endif
 ---
 depends on:
   - already_paid_amount
@@ -1046,16 +1064,10 @@ attachment:
         % else:
         ${other_parties.full_names()}
         % endif
-    - "defendant_name_1": |
-        % if plaintiff_or_petitioner and other_parties.number_gathered() == 1:
-        ${other_parties.full_names()}
-        % elif users.number_gathered() == 1 and not plaintiff_or_petitioner:
-        ${users.full_names()}
-        % endif
     - "defendant_list": |
-        % if plaintiff_or_petitioner and other_parties.number_gathered() > 1:
+        % if plaintiff_or_petitioner:
         ${other_parties.full_names()}
-        % elif users.number_gathered() > 1 and not plaintiff_or_petitioner:
+        % else:
         ${users.full_names()}
         % endif
     - "debtor_name_1": |
