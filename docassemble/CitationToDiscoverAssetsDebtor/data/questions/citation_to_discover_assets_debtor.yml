@@ -79,14 +79,12 @@ code: |
   
   set_progress(60)
   #calculation_debug
-  
-  hearing_date
-  
   service_reminder
   if other_parties[0].person_type == "business":
     if other_parties[0].has_agent:
       agent.name.first
   other_parties[0].address.address
+  hearing_date
   any_debtor_docs
 
   nav.set_section('section_user')
@@ -141,7 +139,7 @@ code: |
 ---
 id: welcome
 question: |
-  Citation to Discover Assets to Debtor
+  Citation to discover assets to debtor
 subquestion: |
   Welcome to Illinois Legal Aid Online's **Citation to discover assets to debtor** Easy Form.
 
@@ -391,9 +389,9 @@ question: |
 subquestion: |
   After you file the *Citation to Discover Assets* with the court, ${other_parties[0].name_full()} will need to be served with a copy.
 
-  You cannot serve the citation yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name_full()}
+  You cannot serve the citation yourself. You will need a sheriff or a private process server to give the form to ${other_parties[0].name_full()}.
 
-  The instructions page included with your forms has info about service. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
+  The instructions included with your forms has info about service. To learn more, read ILAO's article about [**serving a summons**](https://www.illinoislegalaid.org/legal-information/serving-summons).
 ---
 id: defendant agent check
 question: |
@@ -675,12 +673,12 @@ subquestion: |
   This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name_full()} has already paid you.
   
   % if (judgment_date > as_datetime('12/31/2019')):
-  The simple interest rate on the unpaid amount can vary. If the judgment is a **{consumer debt judgment}** of $25,000 or less, the simple interest rate is 5% per year. Otherwise, the simple interest rate is 9% per year. 
+  For judgments entered after 2019, the simple interest rate on the unpaid amount can vary. If the judgment is a **{consumer debt judgment}** of $25,000 or less, the simple interest rate is 5% per year. Otherwise, the simple interest rate is 9% per year. 
   
   Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
 
   % else:
-  The simple interest rate on the unpaid amount is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
+  For judgments entered before 2020, the simple interest rate on the unpaid amount is 9% per year. Figuring out how much interest you are owed can be complicated by how much time has passed and if ${other_parties[0].name_full()} has paid you part of the judgment. If you do not know how much interest you are owed, you may want to talk with a lawyer. Use **[Get Legal Help](https://www.illinoislegalaid.org/get-legal-help)** to find free or low-cost legal services in your area.
   
   % endif
   ${collapse_template(calculating_interest)}
@@ -1108,16 +1106,10 @@ attachment:
         % else:
         ${other_parties.full_names()}
         % endif
-    - "defendant_name_1": |
-        % if plaintiff_or_petitioner and other_parties.number_gathered() == 1:
-        ${other_parties.full_names()}
-        % elif users.number_gathered() == 1 and not plaintiff_or_petitioner:
-        ${users.full_names()}
-        % endif
     - "defendant_list": |
-        % if plaintiff_or_petitioner and other_parties.number_gathered() > 1:
+        % if plaintiff_or_petitioner:
         ${other_parties.full_names()}
-        % elif users.number_gathered() > 1 and not plaintiff_or_petitioner:
+        % else:
         ${users.full_names()}
         % endif
     - "county_2": ${trial_court.address.county.upper()}
@@ -1275,6 +1267,24 @@ review:
     button: |
       **Case number:**
       ${case_number} 
+  - Edit: other_parties[0].has_agent
+    button: |
+      **Does ${other_parties[0].name.first} have a registered agent?**
+      ${word(yesno(other_parties[0].has_agent))}
+    show if: other_parties[0].person_type == "business"
+  - Edit: agent.name.first
+    button: |
+      **Agent's name:**
+      ${agent.name_full()}
+    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
+  - Edit: other_parties[0].address.address
+    button: |
+      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
+      **${agent.name_full()}'s address:**
+      % else:
+      **${other_parties[0].name_full()}'s address:**
+      % endif
+      ${other_parties[0].address.on_one_line(bare=True)}
   - Edit: hearing_date
     button: |
       **Hearing information:**
@@ -1315,24 +1325,6 @@ review:
       **Should ${other_parties[0].name_full()} bring additional documents?** 
       No
       % endif
-  - Edit: other_parties[0].has_agent
-    button: |
-      **Does ${other_parties[0].name.first} have a registered agent?**
-      ${word(yesno(other_parties[0].has_agent))}
-    show if: other_parties[0].person_type == "business"
-  - Edit: agent.name.first
-    button: |
-      **Agent's name:**
-      ${agent.name_full()}
-    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
-  - Edit: other_parties[0].address.address
-    button: |
-      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name_full()}'s address:**
-      % else:
-      **${other_parties[0].name_full()}'s address:**
-      % endif
-      ${other_parties[0].address.on_one_line(bare=True)}
 ---
 section: About you
 id: user review screen
@@ -1454,7 +1446,25 @@ review:
   - Edit: case_number
     button: |
       **Case number:**
-      ${case_number} 
+      ${case_number}   
+  - Edit: other_parties[0].has_agent
+    button: |
+      **Does ${other_parties[0].name.first} have a registered agent?**
+      ${word(yesno(other_parties[0].has_agent))}
+    show if: other_parties[0].person_type == "business"
+  - Edit: agent.name.first
+    button: |
+      **Agent's name:**
+      ${agent.name_full()}
+    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
+  - Edit: other_parties[0].address.address
+    button: |
+      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
+      **${agent.name_full()}'s address:**
+      % else:
+      **${other_parties[0].name_full()}'s address:**
+      % endif
+      ${other_parties[0].address.on_one_line(bare=True)}
   - Edit: hearing_date
     button: |
       **Hearing information:**
@@ -1495,24 +1505,6 @@ review:
       **Should ${other_parties[0].name_full()} bring additional documents?** 
       No
       % endif
-  - Edit: other_parties[0].has_agent
-    button: |
-      **Does ${other_parties[0].name.first} have a registered agent?**
-      ${word(yesno(other_parties[0].has_agent))}
-    show if: other_parties[0].person_type == "business"
-  - Edit: agent.name.first
-    button: |
-      **Agent's name:**
-      ${agent.name_full()}
-    show if: other_parties[0].person_type == "business" and other_parties[0].has_agent
-  - Edit: other_parties[0].address.address
-    button: |
-      % if other_parties[0].person_type == "business" and other_parties[0].has_agent:
-      **${agent.name_full()}'s address:**
-      % else:
-      **${other_parties[0].name_full()}'s address:**
-      % endif
-      ${other_parties[0].address.on_one_line(bare=True)}
   - note: |
       <h4>About you</h4>
   - Edit: users[0].name.first
