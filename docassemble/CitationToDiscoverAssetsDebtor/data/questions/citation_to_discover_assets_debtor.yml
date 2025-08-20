@@ -56,8 +56,6 @@ code: |
         if renewal_date > judgment_date.plus(years=10):
           if is_consumer_debt:
             consumer_debt_kickout 
-      #  if renewal_date < today().minus(years=7):
-      #    old_renewal_kickout
   set_progress(20)
   if judgment_date > today().minus(days=30):
     wait_note
@@ -249,9 +247,19 @@ subquestion: |
   Consumer debt is debt taken out for personal, family, or household purposes. 
   
   A consumer debt judgment is a judgment from a court case about consumer debt.
+
+  ${collapse_template(about_consumer_debt)}
 fields:
   - no label: is_consumer_debt
     datatype: yesnoradio
+---
+template: about_consumer_debt
+subject: |
+  **Examples of consumer debt**
+content: |
+  A wide variety of debt counts as consumer debt. If your ${judgment_date} judgment was against a person, not a company, it may be a consumer debt judgment. 
+  
+  If you lent money to a friend for them to buy something or fix something for themself, their family, or their house, they would owe you a consumer debt. If the ${judgment_date} judgment came from a case regarding a debt like that, you may need to click **Yes** here.
 ---
 id: consumer debt kickout
 event: consumer_debt_kickout
@@ -365,7 +373,10 @@ subquestion: |
   % if i == 0:
   The **debtor** is the person or business that owes you money. Their name will be on the court papers from the case where the judge ruled they owe you money.
 
-  A business and its owner may have both parties in the original case. You should enter which of the two the court ordered to pay you.
+  A business and its owner may have both been parties in the original case. You should enter which of the two the court ordered to pay you. If the judgment does not say which one should pay you, you may need to get a new copy from the court.
+
+  % else: 
+  This program will only make a citation for ${other_parties[0].name_full()}. If the ${ordinal(i)} ${opposing_party} also owes you money, you will need to make a separate citation for them.
   % endif
 fields:
   - code: |
