@@ -258,8 +258,13 @@ subject: |
   **Examples of consumer debt**
 content: |
   A wide variety of debt counts as consumer debt. If your ${judgment_date} judgment was against a person, not a company, it may be a consumer debt judgment. 
+
+  Someone owes you a consumer debt if you lent them money to:
+
+  * Buy something for themself, their family, or their house, or
+  * Fix something for themself, their family, or their house.
   
-  If you lent money to a friend for them to buy something or fix something for themself, their family, or their house, they would owe you a consumer debt. If the ${judgment_date} judgment came from a case regarding a debt like that, you may need to click **Yes** here.
+  If the ${judgment_date} judgment came from a case regarding a debt like that, you may need to click **Yes** here.
 ---
 id: consumer debt kickout
 event: consumer_debt_kickout
