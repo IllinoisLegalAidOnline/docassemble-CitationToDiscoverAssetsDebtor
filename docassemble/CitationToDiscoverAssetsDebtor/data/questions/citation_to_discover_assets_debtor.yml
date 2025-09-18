@@ -735,11 +735,11 @@ content: |
   % if (judgment_date > as_datetime('12/31/2019')):
   The interest rate is calculated as simple interest on the unpaid amount.
   
-  Imagine you had a judgment of $1,000 two years ago, and it was not for consumer debt. The simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  Imagine you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
   % else:
   The 9% interest rate is calculated as simple interest on the unpaid amount.
 
-  If you had a judgment of $1,000 two years ago, and it was not for consumer debt. The simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  If you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
   % endif
 ---
 depends on:
@@ -774,15 +774,15 @@ template: owed_example
 subject: |
   **Example of an amount still owed**
 content: |
-  If the original judgment said ${other_parties[0].name_full()} owed you $100 plus court costs, here's how the amount still owed could be calculated:
+  If the original judgment said ${other_parties[0].name_full()} owed you $1,000 plus court costs, here's how the amount still owed could be calculated:
 
-  * Original judgment: $100
-  * Court costs: $9
-  * Interest on judgment: $9 (9% of $100)
+  * Original judgment: $1,000
+  * Court costs: $90
+  * Interest on judgment: $90 (9% of $1,000)
   
-  The total amount owed would be $100 plus $10 plus $9, which is $119.
+  The total amount owed would be $1,000 plus $90 plus $90, which is $1,180.
 
-  If ${other_parties[0].name_full()} had already paid you $30 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $119 minus $30, which is $89.
+  If ${other_parties[0].name_full()} had already paid you $300 for that judgment, you would subtract that from the total amount owed. The amount still owed would be $1,180 minus $300, which is $880.
 ---
 id: hearing scheduled
 question: |
