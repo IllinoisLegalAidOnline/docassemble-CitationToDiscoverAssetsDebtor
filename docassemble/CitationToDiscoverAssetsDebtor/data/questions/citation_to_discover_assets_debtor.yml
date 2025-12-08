@@ -393,7 +393,7 @@ question: |
   Are there any other ${opposing_party}s in this case?
 subquestion: |
   % if len(other_parties.elements) >= 1:  
-  So far you have told us about ${other_parties.full_names()}.
+  So far you have told us about ${fix_punctuation(other_parties.full_names())}
   % endif
 fields:
   - no label: other_parties.there_is_another
@@ -682,10 +682,11 @@ subquestion: |
   The case number is in the caption near the top of the first page of the court forms.
 fields:
   - Case number: case_number
+    maxlength: 21
 ---
 id: judgment amount
 question: |
-  Details about the amount ${other_parties[0].name_full()} still owes you
+  Info about what ${other_parties[0].name_full()} owes you
 subquestion: |
   This information is used to figure out how much money you are still owed. This includes the original judgment amount, court costs, interest on the judgment amount, and how much ${other_parties[0].name_full()} has already paid you.
   
@@ -716,8 +717,8 @@ fields:
     datatype: currency
     step: 0.01
     help: |
-      % if (judgment_date > as_datetime('12/31/2019')):
-      The rate for post-judgment simple interest is either 5% per year or 9% per year on the unpaid amount of the judgment. The rate is 5% for consumer debt judgments for $25,000 or less, and 9% for other judgments. This program does not calculate how much interest you are owed.
+      % if (judgment_date > as_datetime('12/31/2019')) and is_consumer_debt:
+      The rate for post-judgment simple interest on a consumer debt judgment under $25,000 is 5%. For larger judgments, the interest rate is 9%. This program does not calculate how much interest you are owed.
       % else:
       The rate for post-judgment simple interest is 9% per year on the unpaid amount of the judgment. This program does not calculate how much interest you are owed.
       % endif
@@ -736,11 +737,11 @@ content: |
   % if (judgment_date > as_datetime('12/31/2019')):
   The interest rate is calculated as simple interest on the unpaid amount.
   
-  Imagine you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  Imagine you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the interest to a total of $180. That’s the amount you can ask for in your citation.
   % else:
   The 9% interest rate is calculated as simple interest on the unpaid amount.
 
-  If you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the total to $1,180. That’s the amount you can ask for in your citation.
+  If you had a judgment of $1,000 two years ago, and it was not for consumer debt, the simple interest rate would be 9%. You would multiply $1,000 x 9% to get $90 for each year. That would bring the interest to a total of $180. That’s the amount you can ask for in your citation.
   % endif
 ---
 depends on:
@@ -822,8 +823,6 @@ fields:
   - Courtroom: courtroom
     maxlength: 10
     required: False
-    js show if:
-     val('hearing_type') === "person"
   - Video conference website (URL): remote_website
     maxlength: 100
     input type: area
@@ -864,7 +863,9 @@ fields:
   - What additional documents should they bring?: debtor_docs
     input type: area
     rows: 5
-    maxlength: 250
+    maxlength: 300
+    note: |
+      The form has space for about **300 characters**, including spaces.
     js show if:
       val('any_debtor_docs') === true
 ---
@@ -905,7 +906,7 @@ question: |
     Was anyone else on your side of the case?
 subquestion: |
   % if len(users.elements) > 1:  
-  So far you have told us about ${users.full_names()}.
+  So far you have told us about ${fix_punctuation(users.full_names())}
   % else:
   If there are other ${party_label}s besides you, click **Yes**.
   % endif
@@ -987,7 +988,7 @@ subquestion: |
       <li>Everything on the forms is true and correct, or you have been informed or you believe it is true and correct, and</li>
       <li>You understand that making a false statement on the forms is perjury and has penalties provided by law.</li>
     </ul></p>
-    <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
+    <p>See the <a href="https://www.ilga.gov/legislation/ilcs/documents/073500050k1-109.htm"><b>Illinois Code of Civil Procedure, 735 ILCS 5/1-109</b></a> for more information.</p>
   </div>
 
 fields:
@@ -1051,11 +1052,11 @@ content: |
 ---
 objects:
   - instructions: ALDocument.using(title="Instructions", filename="instructions.pdf", has_addendum=False)
-  - citation_editable_pages: ALDocument.using(title="Citation to Discover Assets", filename="citation_editable_pages.pdf", has_addendum=False)
-  - citation_uneditable_pages: ALDocument.using(title="Citation to Discover Assets", filename="citation_uneditable_pages.pdf", has_addendum=False)
+  - citation_first_page: ALDocument.using(title="Citation to Discover Assets", filename="citation_first_page.pdf", has_addendum=False)
+  - citation_remaining_pages: ALDocument.using(title="Citation to Discover Assets", filename="citation_remaining_pages.pdf", has_addendum=False)
 ---
 objects:
-  - citation_bundle: ALDocumentBundle.using(elements=[citation_editable_pages, citation_uneditable_pages], filename="citation_to_discover_assets_to_debtor.pdf", title = "Citation to Discover Assets to Debtor")
+  - citation_bundle: ALDocumentBundle.using(elements=[citation_first_page, citation_remaining_pages], filename="citation_to_discover_assets_to_debtor.pdf", title = "Citation to Discover Assets to Debtor")
 ---
 objects:
   - al_user_bundle: ALDocumentBundle.using(elements=[instructions, citation_bundle], filename="citation_to_discover_assets_to_debtor.pdf", title="All forms")
@@ -1063,8 +1064,8 @@ objects:
 ---
 code: |
   instructions.enabled = True
-  citation_editable_pages.enabled = True
-  citation_uneditable_pages.enabled = True
+  citation_first_page.enabled = True
+  citation_remaining_pages.enabled = True
   citation_bundle.enabled = True
 ---
 attachment:
@@ -1078,14 +1079,14 @@ attachment:
       - "fake": ${ "" } 
 ---
 attachment:
-  variable name: citation_editable_pages[i]
-  name: citation_editable_pages
-  filename: citation_editable_pages
+  variable name: citation_first_page[i]
+  name: citation_first_page
+  filename: citation_first_page
   skip undefined: True
   editable: True
   pdf template file: citation_debtor_2026_editable_pages.pdf
   fields:
-    - "county_1": ${trial_court.address.county.upper()}
+    - "county_1": ${capitalize(trial_court.address.county)}
     - "case_number_1": ${case_number}
     - "case_number_2": ${case_number}
     - "plaintiff_list": |
@@ -1114,6 +1115,7 @@ attachment:
     - "court_pm": ${True if format_time(hearing_time, format='a')=='PM' and hearing_time != "" else ""}
     - "in_person": ${True if hearing_type == "person" else False}
     - "remote": ${True if hearing_type == "remote" else False}
+    - "courtroom": ${courtroom}
     - "courtroom_address_and_number": |
         % if hearing_type == "person":
         ${court_name}, ${court_full_street}, ${court_csz}, Room ${courtroom}
@@ -1130,15 +1132,15 @@ attachment:
         ${judgment_date}
         % endif
     - "judgment_amount": ${currency(judgment_amount, symbol=u'')}
-    - "owed_amount": ${currency(amount_still_owed, symbol=u'')}
+    - "owed_amount": ${currency(amount_still_owed, symbol=u'') + "."}
     - "is_consumer": ${is_consumer_debt}
     - "not_consumer": ${True if not is_consumer_debt else False}
     - "other_docs": ${debtor_docs if any_debtor_docs else ""}
 ---
 attachment:
-  variable name: citation_uneditable_pages[i]
-  name: citation_uneditable_pages
-  filename: citation_uneditable_pages
+  variable name: citation_remaining_pages[i]
+  name: citation_remaining_pages
+  filename: citation_remaining_pages
   skip undefined: True
   editable: False
   pdf template file: citation_debtor_2026_uneditable_pages.pdf
@@ -1155,7 +1157,7 @@ attachment:
         % else:
         ${users.full_names()}
         % endif
-    - "county_2": ${trial_court.address.county.upper()}
+    - "county_2": ${capitalize(trial_court.address.county)}
     - "case_number_3": ${case_number}
     - "case_number_4": ${case_number}
     - "case_number_5": ${case_number}
