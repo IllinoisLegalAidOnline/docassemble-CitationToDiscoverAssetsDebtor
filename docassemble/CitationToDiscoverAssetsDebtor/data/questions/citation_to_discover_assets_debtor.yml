@@ -1133,7 +1133,7 @@ attachment:
     - "owed_amount": ${currency(amount_still_owed, symbol=u'') + "."}
     - "is_consumer": ${is_consumer_debt}
     - "not_consumer": ${True if not is_consumer_debt else False}
-    - "other_docs": ${debtor_docs if any_debtor_docs else ""}
+    - "other_docs": ${debtor_docs.replace("\n", " ").replace("\r", " ") if any_debtor_docs else ""}
 ---
 attachment:
   variable name: citation_remaining_pages[i]
@@ -1385,19 +1385,19 @@ review:
       % else:
       * Courtroom: None entered
       % endif
-      % if remote_website != "":
+      % if hearing_type['remote'] and remote_website != "":
       * Video conference website (URL): ${remote_website}
-      % else:
+      % elif hearing_type['remote']:
       * Video conference website (URL): None entered
       % endif
-      % if remote_login != "":
+      % if hearing_type['remote'] and remote_login != "":
       * Log-in information: ${remote_login}
-      % else:
+      % elif hearing_type['remote']:
       * Log-in information: None entered
       % endif
-      % if remote_phone != "":
+      % if hearing_type['remote'] and remote_phone != "":
       * Call-in phone number: ${ phone_number_formatted(remote_phone) }
-      % else:
+      % elif hearing_type['remote']:
       * Call-in phone number: None entered
       % endif
   - Edit: any_debtor_docs
@@ -1581,19 +1581,19 @@ review:
       % else:
       * Courtroom: None entered
       % endif
-      % if remote_website != "":
+      % if hearing_type['remote'] and remote_website != "":
       * Video conference website (URL): ${remote_website}
-      % else:
+      % elif hearing_type['remote']:
       * Video conference website (URL): None entered
       % endif
-      % if remote_login != "":
+      % if hearing_type['remote'] and remote_login != "":
       * Log-in information: ${remote_login}
-      % else:
+      % elif hearing_type['remote']:
       * Log-in information: None entered
       % endif
-      % if remote_phone != "":
+      % if hearing_type['remote'] and remote_phone != "":
       * Call-in phone number: ${ phone_number_formatted(remote_phone) }
-      % else:
+      % elif hearing_type['remote']:
       * Call-in phone number: None entered
       % endif
   - Edit: any_debtor_docs
