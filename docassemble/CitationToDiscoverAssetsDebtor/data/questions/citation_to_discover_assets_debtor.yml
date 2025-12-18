@@ -1072,7 +1072,7 @@ attachment:
   filename: instructions
   skip undefined: True
   editable: False
-  pdf template file: instructions_citation_debtor_2026.pdf
+  pdf template file: instructions_citation_debtor.pdf
   fields:
       - "fake": ${ "" } 
 ---
@@ -1082,7 +1082,7 @@ attachment:
   filename: citation_first_page
   skip undefined: True
   editable: True
-  pdf template file: citation_debtor_2026_editable_pages.pdf
+  pdf template file: citation_debtor_editable_pages.pdf
   fields:
     - "county_1": ${capitalize(trial_court.address.county)}
     - "case_number_1": ${case_number}
@@ -1141,7 +1141,7 @@ attachment:
   filename: citation_remaining_pages
   skip undefined: True
   editable: False
-  pdf template file: citation_debtor_2026_uneditable_pages.pdf
+  pdf template file: citation_debtor_uneditable_pages.pdf
   fields:
     - "plaintiff_list": |
         % if plaintiff_or_petitioner:
