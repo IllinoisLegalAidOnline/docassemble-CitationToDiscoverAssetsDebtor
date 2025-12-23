@@ -1120,7 +1120,7 @@ attachment:
         % endif
     - "video_website": ${ remote_website if hearing_type['remote'] else ""}
     - "log_in_info": ${ remote_login if hearing_type['remote'] else ""}
-    - "call_in_phone": ${ remote_phone if hearing_type['remote'] else ""}
+    - "call_in_phone": ${ phone_number_formatted(remote_phone) if hearing_type['remote'] else ""}
     - "clerk_phone": ${trial_court.phone}
     - "clerk_website": ${trial_court.website}
     - "judgment_date": |
