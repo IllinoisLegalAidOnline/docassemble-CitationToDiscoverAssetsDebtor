@@ -96,6 +96,7 @@ code: |
   nav.set_section('section_download')
   set_progress(100)
   forms_assembling
+  snapshot_forms
   get_docs_screen
 ---
 code: |
